@@ -51,12 +51,8 @@ it("can handle a simple loan", () => {
   const loanAccountId = s.addLoan({
     interest: {
       rate: 5000 / 365,
-      calcSchedule: {
+      schedule: {
         period: "days",
-        startAt: now,
-      },
-      applySchedule: {
-        period: "months",
         startAt: now,
       },
     },
@@ -76,12 +72,12 @@ it("can handle a simple loan", () => {
     schedule: { period: "weeks", every: 2, startAt: now },
   });
 
-  //   const iteration = s.runUntil((s, i) => i > 45);
-  const iteration = s.runUntil(
-    (s, i) => s.getAccountBalance(loanAccountId) >= 0
-  );
+  const iteration = s.runUntil((s, i) => i > 45);
+  //   const iteration = s.runUntil(
+  //     (s, i) => s.getAccountBalance(loanAccountId) >= 0
+  //   );
   console.log("completed in %d iterations", iteration);
-  //   console.debug(s.getAccountDetails(accountId));
-  //   console.debug(s.getAccountDetails(loanAccountId));
+  console.debug(s.getAccountDetails(accountId));
+  console.debug(s.getAccountDetails(loanAccountId));
   //   console.debug(s.getAccountDetails(loanAccountId + "-pending-interest"));
 });

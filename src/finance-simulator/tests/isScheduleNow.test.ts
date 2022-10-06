@@ -54,7 +54,7 @@ describe("weekly schedule", () => {
   );
 });
 
-describe("monthly schedule", () => {
+describe("multiple monthly schedule", () => {
   const schedule: Schedule = {
     end: {
       afterXOccurences: 7,
@@ -78,6 +78,39 @@ describe("monthly schedule", () => {
   });
 
   it.each([["2022-01-02"], ["2022-02-01"], ["2023-03-01"]])(
+    "is invalid for %s",
+    (d) => {
+      expect(
+        isScheduleNow(schedule, new Date(d + "T05:00:00.000z"))
+      ).toBeFalsy();
+    }
+  );
+});
+
+describe("single monthly schedule", () => {
+  const schedule: Schedule = {
+    end: {
+      afterXOccurences: 7,
+    },
+    period: "months",
+    every: 1,
+    startAt: new Date("2022-01-01T05:00:00.000z"),
+  };
+  it.each([
+    ["2022-01-01"],
+    ["2022-02-01"],
+    ["2022-03-01"],
+    ["2022-04-01"],
+    ["2022-05-01"],
+    ["2022-06-01"],
+    ["2022-07-01"],
+  ])("is valid for %s", (d) => {
+    expect(
+      isScheduleNow(schedule, new Date(d + "T05:00:00.000z"))
+    ).toBeTruthy();
+  });
+
+  it.each([["2021-12-01"], ["2022-01-02"], ["2023-08-01"]])(
     "is invalid for %s",
     (d) => {
       expect(
