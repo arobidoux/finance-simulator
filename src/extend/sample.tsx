@@ -1,7 +1,6 @@
 import { useContext } from "react";
-import { createModel } from "./createModel";
-import { InMemoryStore, StoreContext } from "./StoreContext";
-import { useModel } from "./useModel";
+import { createModel, useModel } from "./Model";
+import { StoreContext, InMemoryStore } from "./StoreContext";
 
 // TODO export function useModelList<T, P>(
 //     model: CreatedModel<T, P>,

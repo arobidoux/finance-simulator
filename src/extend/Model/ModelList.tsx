@@ -10,13 +10,11 @@ import {
   useReducer,
   useState,
 } from "react";
-import { CreatedModel } from "./createModel";
-import { StoreContext } from "./StoreContext";
-import {
-  ModelRequestFound,
-  ModelRequestStatuses,
-  useModelOptions,
-} from "./useModel";
+import { CreatedModel } from "./CreatedModel";
+import { StoreContext } from "../StoreContext";
+import { useModelOptions } from "./useModelOptions";
+import { ModelRequestFound } from "./ModelRequestFound";
+import { ModelRequestStatuses } from "./ModelRequestStatuses";
 
 export function ModelList<T, P>(
   props: PropsWithChildren<{
@@ -60,7 +58,7 @@ export function ModelList<T, P>(
         dispatch({
           action: "set",
           // TODO figure out how to paginate
-          entries: page.map(({ id, data }) => {
+          entries: page.entries.map(({ id, data }) => {
             return {
               status: ModelRequestStatuses.FOUND,
               id: id,

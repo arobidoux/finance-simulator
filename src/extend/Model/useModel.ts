@@ -9,31 +9,12 @@ import {
   useReducer,
   useState,
 } from "react";
-import { StoreContext } from "./StoreContext";
-import { CreatedModel } from "./createModel";
-
-export enum ModelRequestStatuses {
-  INITIATED = "initiated",
-  FOUND = "FOUND",
-  NEW = "NEW",
-  NOT_FOUND = "not-found",
-  ERROR = "error",
-}
-
-export type ModelRequest<T> =
-  | {
-      status: ModelRequestStatuses.INITIATED;
-    }
-  | ModelRequestFound<T>
-  | { status: ModelRequestStatuses.NEW }
-  | { status: ModelRequestStatuses.NOT_FOUND }
-  | { status: ModelRequestStatuses.ERROR; error: string };
-
-export interface ModelRequestFound<T> {
-  status: ModelRequestStatuses.FOUND;
-  result: T;
-  id: string;
-}
+import { StoreContext } from "../StoreContext/StoreContext";
+import { CreatedModel } from "./CreatedModel";
+import { ModelRequest } from "./ModelRequest";
+import { ModelRequestStatuses } from "./ModelRequestStatuses";
+import { useModelOptions } from "./useModelOptions";
+import { useModelResult } from "./useModelResult";
 
 interface useModelReducerState<T> {
   request: ModelRequest<T>;
@@ -102,44 +83,6 @@ function useModelReducer<T>(
     default:
       throw new Error("invalid action");
   }
-}
-
-export interface useModelOptions<T> {
-  // will load this entry, if available
-  id?: string;
-  // when id is not specified, the sample value will be returned as "entry".
-  // if a blank slate is prefered, set this to true
-  blank?: boolean;
-  request?: ModelRequestFound<T>;
-  onChange?: {
-    (action: "created" | "updated" | "deleted", id: string, entry: T): void;
-  };
-  onDelete?: { (id: string): void };
-  onCreate?: { (id: string, entry: T): void };
-  onUpdate?: { (id: string, entry: T): void };
-}
-
-export interface useModelResult<T> {
-  id: string | null;
-  entry: Partial<T> | T | null;
-  error: null | string;
-  update: { <K extends keyof T>(key: K, value: T[K]): void };
-  // store new version
-  commit: {
-    (): Promise<
-      | {
-          action: "created" | "updated" | "unchanged";
-          entry: T;
-          id: string;
-        }
-      | { action: "error"; message: string }
-    >;
-  };
-  // reset to loaded value
-  reset: { (): void };
-  delete: { (): Promise<{ deleted: boolean }> };
-  hasChanges: { (key?: string): boolean };
-  request: ModelRequest<T>;
 }
 
 export function useModel<T, P>(

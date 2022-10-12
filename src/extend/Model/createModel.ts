@@ -1,33 +1,9 @@
-export type StoredValue = string;
+import { CreatedModel } from "./CreatedModel";
+import { CreateModelInterface } from "./CreateModelInterface";
+import { StoredValue } from "./StoredValue";
+import { VersionizedData } from "./VersionizedData";
 
-export type ModelTypeOf<M> = M extends CreatedModel<infer T, any> ? T : never;
-
-type VersionizedData<T> = { _version: number } & T;
 type MaybeVersionizedData<T> = { _version?: number } & T;
-
-export interface CreateModelInterface<T, P> {
-  $: {
-    sample: () => T;
-    toStore: { (e: T): StoredValue };
-    fromStore: { (s: StoredValue): VersionizedData<T> };
-    migrate: { (D: { _version?: number } & P): VersionizedData<T> };
-    version: number;
-  };
-}
-
-interface modelMigrateInterface<T> {
-  $migrate: {
-    <X extends T>(opts: {
-      sample: { (prev: T): X };
-      migrate: { (prev: T): X };
-      toStore?: { (e: X): StoredValue };
-      fromStore?: { (s: StoredValue): X };
-    }): CreateModelInterface<X, T> & modelMigrateInterface<X>;
-  };
-}
-
-export type CreatedModel<T, P> = CreateModelInterface<T, P> &
-  modelMigrateInterface<T>;
 
 function curryMigrate<T, P>(model: CreateModelInterface<T, P>) {
   return function <X extends T>(opts: {
