@@ -1,23 +1,46 @@
-import { Dispatch, useMemo } from "react";
-import { SimulationsAction } from "../App";
-import { useSimulation } from "../hooks/useSimulation";
+import { Dispatch, useContext, useMemo } from "react";
+import { SimulationsAction } from "./FinanceSimulationExplorer";
+import { SimulationContext } from "../contexts/SimulationContext";
+import { SimulationHelper } from "../finance-simulator";
 import { FinanceDashboard } from "./FinanceDashboard";
+import { PrecisionContext } from "../contexts/PrecisionContext";
 
 export function FinanceSimulation(props: {
   alias?: string;
   initialState?: string;
   dispatchSim: Dispatch<SimulationsAction>;
 }) {
-  const simulation = useSimulation({
-    alias: props.alias ?? "default",
-    prevState: props.initialState ?? undefined,
-  });
+  const precisionContext = useContext(PrecisionContext);
+  const simulation: SimulationHelper = useMemo(
+    () =>
+      new SimulationHelper(
+        props.initialState ?? {
+          interestRatePrecision: precisionContext.interestRate,
+        }
+      ),
+    [props.initialState, precisionContext]
+  );
+  const alias = props.alias ?? "default";
 
   const dashboard = useMemo(() => {
     if (simulation)
-      return <FinanceDashboard simulation={simulation}></FinanceDashboard>;
+      return (
+        <SimulationContext.Provider
+          value={{
+            simulation,
+            save: () =>
+              props.dispatchSim({
+                action: "save",
+                alias,
+                state: JSON.stringify(simulation),
+              }),
+          }}
+        >
+          <FinanceDashboard></FinanceDashboard>
+        </SimulationContext.Provider>
+      );
     return <div>loading...</div>;
-  }, [simulation]);
+  }, [simulation, props, alias]);
 
   return (
     <div>
@@ -33,11 +56,22 @@ export function FinanceSimulation(props: {
               props.dispatchSim({
                 action: "fork",
                 alias,
-                forkFrom: JSON.stringify(simulation),
+                state: JSON.stringify(simulation),
               });
           }}
         >
           Fork
+        </button>
+        <button
+          onClick={() => {
+            props.dispatchSim({
+              action: "persist",
+              alias: props.alias ?? "default",
+              state: JSON.stringify(simulation),
+            });
+          }}
+        >
+          Persist
         </button>
       </h2>
       {dashboard}

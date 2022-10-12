@@ -1,6 +1,6 @@
-import { SyntheticEvent, useCallback, useState } from "react";
+import { SyntheticEvent, useCallback, useContext, useState } from "react";
+import { SimulationContext } from "../contexts/SimulationContext";
 import {
-  SimulationHelper,
   Account as FinanceAccount,
   ScheduledTransaction as FinanceScheduledTransaction,
   Schedule as FinanceSchedule,
@@ -8,14 +8,13 @@ import {
 import { Interest } from "./Interest";
 import { ScheduledTransaction } from "./ScheduledTransaction";
 
-export function FinanceSimulationSettings(props: {
-  simulation: SimulationHelper;
-}) {
+export function FinanceSimulationSettings(props: {}) {
+  const { simulation } = useContext(SimulationContext);
   const [confTick, setConfTick] = useState(0);
-  const scheduled = props.simulation.$scheduledTransactions.map((stx) => (
+  const scheduled = simulation.$scheduledTransactions.map((stx) => (
     <ScheduledTransaction key={stx.uuid} stx={stx}></ScheduledTransaction>
   ));
-  const accounts = props.simulation.$accounts.map((account) => (
+  const accounts = simulation.$accounts.map((account) => (
     <div key={account.uuid}>
       {account.label} ({account.type}){" "}
       <Interest interest={account.interest}></Interest>
@@ -27,10 +26,10 @@ export function FinanceSimulationSettings(props: {
       {scheduled}
       <NewScheduledTransaction
         newEntry={(stx: Omit<FinanceScheduledTransaction, "uuid">) => {
-          props.simulation.addScheduledTransaction(stx);
+          simulation.addScheduledTransaction(stx);
           setConfTick(confTick + 1);
         }}
-        accounts={props.simulation.$accounts.map((act) => {
+        accounts={simulation.$accounts.map((act) => {
           return { label: act.label, uuid: act.uuid };
         })}
       ></NewScheduledTransaction>
@@ -38,7 +37,7 @@ export function FinanceSimulationSettings(props: {
       {accounts}
       <NewAccountForm
         addAccount={(act) => {
-          props.simulation.addAccount(act);
+          simulation.addAccount(act);
           setConfTick(confTick + 1);
         }}
       ></NewAccountForm>

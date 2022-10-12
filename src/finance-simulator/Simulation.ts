@@ -222,6 +222,31 @@ export class Simulation {
     this.interestCalculators[alias] = handle;
   }
 
+  updateMeta(uuid: string, values: { label?: string; type?: string }) {
+    switch (uuid.substring(0, uuid.indexOf("-"))) {
+      case "act":
+        const act = this.accounts.find((a) => a.uuid === uuid);
+        if (!act) throw new Error("invalid account id");
+        if (values.label) act.label = values.label;
+        if (values.type) act.type = values.type;
+        break;
+      case "tx":
+        const tx = this.transactions.find((t) => t.uuid === uuid);
+        if (!tx) throw new Error("invalid transaction id");
+        if (values.label) tx.label = values.label;
+        if (values.type) tx.type = values.type;
+        break;
+      case "sx":
+        const sx = this.scheduledTransactions.find((s) => s.uuid === uuid);
+        if (!sx) throw new Error("invalid scheduled transaction id");
+        if (values.label) sx.details.label = values.label;
+        if (values.type) sx.details.type = values.type;
+        break;
+      default:
+        throw new Error("invalid uuid format");
+    }
+  }
+
   addAccount(account: Omit<Account, "uuid">): string {
     const uuid = "act-" + uuidv1();
     this.accounts.push({ ...account, uuid });
