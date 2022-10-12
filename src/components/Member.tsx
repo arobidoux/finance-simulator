@@ -1,9 +1,7 @@
 import { createModel, ModelTypeOf, useModel } from "../extend";
-import {
-  ModelRequestFound,
-  ModelRequestStatuses,
-  useModelOptions,
-} from "../extend/useModel";
+import { useModelOptions } from "../extend/Model/useModelOptions";
+import { ModelRequestFound } from "../extend/Model/ModelRequestFound";
+import { ModelRequestStatuses } from "../extend/Model/ModelRequestStatuses";
 
 export const memberModel = createModel({
   sample: () => {

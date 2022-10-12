@@ -30,6 +30,11 @@ export class InMemoryStore implements StoreInterface {
 
   protected async beforeRead(id?: string): Promise<void> {}
 
+  onReloadNeeded(handle: () => void): () => void {
+    // not applicable
+    return () => {};
+  }
+
   async add(data: string): Promise<{ id: string }> {
     const id = this.generateId();
     this.data.push({ id, data });
@@ -93,20 +98,22 @@ export class InMemoryStore implements StoreInterface {
     await this.beforeRead();
     const totalEntryCount = this.data.length;
     const pageSize = this._opts?.list?.pageSize ?? 100;
-    const entries = this.data.slice(startFromIdx, pageSize);
+    const entries = this.data.slice(startFromIdx, startFromIdx + pageSize);
     return {
       entries,
       totalEntryCount,
-      hasMore: totalEntryCount > startFromIdx * pageSize,
+      hasMore: totalEntryCount > startFromIdx + pageSize,
       pageCount: Math.floor(totalEntryCount / pageSize),
       currentPageNumber: Math.floor(startFromIdx / pageSize),
       nextPageToken: JSON.stringify({
         startAt: startFromIdx + pageSize,
       } as InMemoryStorePaginateToken),
-      next: async () => await this._list(startFromIdx + pageSize),
-      prev: async () =>
-        await this._list(startFromIdx > pageSize ? startFromIdx - pageSize : 0),
-      page: async (p: number) => await this._list(p - 1 * pageSize),
+      pageSize,
+      entryCount: entries.length,
+      // next: async () => await this._list(startFromIdx + pageSize),
+      // prev: async () =>
+      //   await this._list(startFromIdx > pageSize ? startFromIdx - pageSize : 0),
+      // page: async (p: number) => await this._list(p - 1 * pageSize),
     };
   }
 }

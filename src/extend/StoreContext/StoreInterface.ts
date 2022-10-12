@@ -7,4 +7,6 @@ export interface StoreInterface<T = string> {
   list: { (paginateToken?: string): Promise<PaginatedResult<T>> };
   delete: { (id: string): Promise<boolean> };
   deleteAll: { (): Promise<boolean> };
+
+  onReloadNeeded(handle: { (): void }): { (): void };
 }

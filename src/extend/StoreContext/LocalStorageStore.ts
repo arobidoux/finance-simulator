@@ -7,19 +7,21 @@ import { SessionStorageStoreOptions } from "./SessionStorageStoreOptions";
  */
 
 export class LocalStorageStore extends SessionStorageStore {
-  constructor(
-    opts: { onReloadNeeded?: { (): void } } & SessionStorageStoreOptions
-  ) {
+  constructor(opts: SessionStorageStoreOptions) {
     super(opts);
     this._store = window.localStorage;
-    if (opts.onReloadNeeded) this.syncAcrossTabs(opts.onReloadNeeded);
   }
 
-  syncAcrossTabs(onReloadNeeded: { (): void }) {
-    window.addEventListener("storage", (event) => {
+  onReloadNeeded(handle: { (): void }): { (): void } {
+    const listener = (event: StorageEvent) => {
       if (event.key == null || event.key === this._storageKey) {
-        onReloadNeeded();
+        handle();
       }
-    });
+    };
+    window.addEventListener("storage", listener);
+
+    return () => {
+      window.removeEventListener("storage", listener);
+    };
   }
 }

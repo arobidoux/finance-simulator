@@ -1,11 +1,5 @@
-export type PaginatedResult<T = string> = {
+import { PaginatedMeta } from "./PaginatedMeta";
+
+export interface PaginatedResult<T = string> extends PaginatedMeta {
   entries: Array<{ id: string; data: T }>;
-  totalEntryCount?: number;
-  pageCount?: number;
-  currentPageNumber?: number;
-  hasMore: boolean;
-  nextPageToken: string | null;
-  next?: { (): Promise<PaginatedResult<T>> };
-  prev?: { (): Promise<PaginatedResult<T>> };
-  page?: { (pageNumber: number): Promise<PaginatedResult<T>> };
-};
+}

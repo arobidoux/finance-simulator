@@ -11,7 +11,7 @@ import {
   useState,
 } from "react";
 import { CreatedModel } from "./CreatedModel";
-import { StoreContext } from "../StoreContext";
+import { PaginatedMeta, StoreContext } from "../StoreContext";
 import { useModelOptions } from "./useModelOptions";
 import { ModelRequestFound } from "./ModelRequestFound";
 import { ModelRequestStatuses } from "./ModelRequestStatuses";
@@ -20,6 +20,8 @@ export function ModelList<T, P>(
   props: PropsWithChildren<{
     model: CreatedModel<T, P>;
     loadNonce?: string | number | Date;
+    loadPageToken?: string | null;
+    onPageChange?: (meta: PaginatedMeta & { entryCount: number }) => void;
   }>
 ) {
   const storeContext = useContext(StoreContext);
@@ -53,12 +55,12 @@ export function ModelList<T, P>(
   useEffect(() => {
     storeContext
       .forModel(props.model)
-      .list()
+      .list(props.loadPageToken ?? undefined)
       .then((page) => {
+        const { entries, ...meta } = page;
         dispatch({
           action: "set",
-          // TODO figure out how to paginate
-          entries: page.entries.map(({ id, data }) => {
+          entries: entries.map(({ id, data }) => {
             return {
               status: ModelRequestStatuses.FOUND,
               id: id,
@@ -66,6 +68,8 @@ export function ModelList<T, P>(
             };
           }),
         });
+        if (typeof props.onPageChange === "function")
+          props.onPageChange({ ...meta, entryCount: entries.length });
       });
   }, [storeContext, props]);
 
