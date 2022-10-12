@@ -64,7 +64,7 @@ export function ModelList<T, P>(
             return {
               status: ModelRequestStatuses.FOUND,
               id: id,
-              result: props.model.$.fromStore(data),
+              result: data,
             };
           }),
         });

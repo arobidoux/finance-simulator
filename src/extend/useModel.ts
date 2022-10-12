@@ -179,28 +179,30 @@ export function useModel<T, P>(
   // load the value
   useEffect(() => {
     if (optsId) {
-      storeContext.get(optsId).then((data) => {
-        if (data) {
-          const result = model.$.fromStore(data);
-          dispatch({
-            action: "set-request",
-            request: {
-              status: ModelRequestStatuses.FOUND,
-              id: optsId,
-              result,
-            },
-            entry: result,
-          });
-        } else {
-          dispatch({
-            action: "set-request",
-            request: {
-              status: ModelRequestStatuses.NOT_FOUND,
-            },
-            entry: null,
-          });
-        }
-      });
+      storeContext
+        .forModel(model)
+        .get(optsId)
+        .then((result) => {
+          if (result) {
+            dispatch({
+              action: "set-request",
+              request: {
+                status: ModelRequestStatuses.FOUND,
+                id: optsId,
+                result,
+              },
+              entry: result,
+            });
+          } else {
+            dispatch({
+              action: "set-request",
+              request: {
+                status: ModelRequestStatuses.NOT_FOUND,
+              },
+              entry: null,
+            });
+          }
+        });
     } else if (!optsRequest) {
       dispatch({
         action: "new",
@@ -241,7 +243,6 @@ export function useModel<T, P>(
         // TODO ensure we do not double commit
         // Check to ensure promises won't cause a problem here..
         const newEntry = { ...entry } as T;
-        const payload = model.$.toStore(newEntry);
         let updatePromise: Promise<{
           entry: T;
           id: string;
@@ -249,17 +250,21 @@ export function useModel<T, P>(
         }>;
         if (docId)
           updatePromise = storeContext
-            .set(docId, payload)
+            .forModel(model)
+            .set(docId, newEntry)
             .then(async (success) => {
               if (!success) throw Promise.reject("failed to save the document");
               return { entry: newEntry, id: docId, action: "updated" };
             });
         else {
           // TODO check to comunicate creation of document id to parent?
-          updatePromise = storeContext.add(payload).then(({ id }) => {
-            setDocId(id);
-            return { entry: newEntry, id, action: "created" };
-          });
+          updatePromise = storeContext
+            .forModel(model)
+            .add(newEntry)
+            .then(({ id }) => {
+              setDocId(id);
+              return { entry: newEntry, id, action: "created" };
+            });
         }
         return updatePromise.then((data) => {
           dispatch({
@@ -294,17 +299,20 @@ export function useModel<T, P>(
     hasChanges,
     delete: () => {
       if (docId) {
-        return storeContext.delete(docId).then((success) => {
-          if (success) {
-            setDocId(null);
-            if (opts?.onDelete) opts.onDelete(docId);
-            if (opts?.onChange) opts.onChange("deleted", docId, entry as T);
-            return { deleted: true };
-          } else {
-            setError("Failed to delete");
-            return { deleted: false };
-          }
-        });
+        return storeContext
+          .forModel(model)
+          .delete(docId)
+          .then((success) => {
+            if (success) {
+              setDocId(null);
+              if (opts?.onDelete) opts.onDelete(docId);
+              if (opts?.onChange) opts.onChange("deleted", docId, entry as T);
+              return { deleted: true };
+            } else {
+              setError("Failed to delete");
+              return { deleted: false };
+            }
+          });
       }
       return Promise.resolve({ deleted: false });
     },

@@ -1,17 +1,17 @@
 import { createContext } from "react";
 import { CreatedModel } from "./createModel";
 
-export interface StoreInterface {
-  add: { (data: string): Promise<{ id: string }> };
-  get: { (id: string): Promise<string | null> };
-  set: { (id: string, data: string): Promise<boolean> };
-  list: { (): Promise<PaginatedResult> };
+export interface StoreInterface<T = string> {
+  add: { (data: T): Promise<{ id: string }> };
+  get: { (id: string): Promise<T | null> };
+  set: { (id: string, data: T): Promise<boolean> };
+  list: { (): Promise<PaginatedResult<T>> };
   delete: { (id: string): Promise<boolean> };
   deleteAll: { (): Promise<boolean> };
 }
 
-export type PaginatedResult = Array<{ id: string; data: string }> & {
-  next: { (): Promise<PaginatedResult> };
+export type PaginatedResult<T = string> = Array<{ id: string; data: T }> & {
+  next: { (): Promise<PaginatedResult<T>> };
 };
 
 export interface InMemoryStoreOptions {
@@ -31,64 +31,88 @@ export interface InMemoryStoreOptions {
 
 type ModelFilter = { <X, Y>(model: CreatedModel<X, Y>): boolean };
 
-interface SpecializedStoreInterface extends StoreInterface {
+interface StoreContextInterface {
   specialize: {
     <T, P>(
       model: ModelFilter | CreatedModel<T, P>,
       store: StoreInterface
-    ): SpecializedStoreInterface;
+    ): StoreContextInterface;
   };
-  forModel: { <T, P>(model: CreatedModel<T, P>): StoreInterface };
+  forModel: { <T, P>(model: CreatedModel<T, P>): StoreInterface<T> };
 }
 
-export class SpecializedStore implements SpecializedStoreInterface {
+export class BaseStoreContext implements StoreContextInterface {
   private _store: StoreInterface;
-  private _parent?: SpecializedStore;
+  private _parent?: BaseStoreContext;
   private _model: ModelFilter;
   constructor(
     store: StoreInterface,
     model: ModelFilter,
-    parent?: SpecializedStore
+    parent?: BaseStoreContext
   ) {
     this._store = store;
     this._model = model;
     this._parent = parent;
   }
-  // forward all of these
-  add(data: string): Promise<{ id: string }> {
-    return this._store.add(data);
-  }
-  get(id: string): Promise<string | null> {
-    return this._store.get(id);
-  }
-  set(id: string, data: string): Promise<boolean> {
-    return this._store.set(id, data);
-  }
-  list(): Promise<PaginatedResult> {
-    return this._store.list();
-  }
-  delete(id: string): Promise<boolean> {
-    return this._store.delete(id);
-  }
-  deleteAll(): Promise<boolean> {
-    return this._store.deleteAll();
-  }
-
   specialize<T, P>(
     model: ModelFilter | CreatedModel<T, P>,
     store: StoreInterface
-  ): SpecializedStoreInterface {
-    return new SpecializedStore(
+  ): BaseStoreContext {
+    return new BaseStoreContext(
       store,
       typeof model === "function" ? model : (t: any) => t === model,
       this
     );
   }
 
-  forModel<T, P>(model: CreatedModel<T, P>): StoreInterface {
-    if (this._model(model)) return this;
+  forModel<T, P>(model: CreatedModel<T, P>): StoreInterface<T> {
+    if (this._model(model))
+      return new FormatedStoreInterface(model, this._store);
     else if (this._parent) return this._parent.forModel(model);
     else throw new Error("No store available for the requested model");
+  }
+}
+class FormatedStoreInterface<T, P> implements StoreInterface<T> {
+  private model: CreatedModel<T, P>;
+  store: StoreInterface<string>;
+  constructor(model: CreatedModel<T, P>, store: StoreInterface<string>) {
+    this.model = model;
+    this.store = store;
+  }
+  protected inflateData(data: string): T {
+    return this.model.$.fromStore(data);
+  }
+  // forward all of these
+  add(data: T): Promise<{ id: string }> {
+    return this.store.add(this.model.$.toStore(data));
+  }
+  async get(id: string): Promise<T | null> {
+    const data = await this.store.get(id);
+    if (data) return this.inflateData(data);
+    return null;
+  }
+  set(id: string, data: T): Promise<boolean> {
+    return this.store.set(id, this.model.$.toStore(data));
+  }
+  protected formatListResult(
+    page: PaginatedResult<string>
+  ): PaginatedResult<T> {
+    return Object.assign(
+      page.map((e) => {
+        return { id: e.id, data: this.inflateData(e.data) };
+      }),
+      { next: () => page.next().then((p) => this.formatListResult(p)) }
+    );
+  }
+  list(): Promise<PaginatedResult<T>> {
+    return this.store.list().then((p) => this.formatListResult(p));
+  }
+
+  delete(id: string): Promise<boolean> {
+    return this.store.delete(id);
+  }
+  deleteAll(): Promise<boolean> {
+    return this.store.deleteAll();
   }
 }
 
@@ -256,7 +280,7 @@ export class LocalStorageStore extends SessionStorageStore {
  * other developers. That way we could also have our data as needed on the
  * platform.
  */
-export const StoreContext = createContext<SpecializedStoreInterface>(
+export const StoreContext = createContext<BaseStoreContext>(
   // default store will accept all model
-  new SpecializedStore(new InMemoryStore({ warnOnUse: true }), (m) => true)
+  new BaseStoreContext(new InMemoryStore({ warnOnUse: true }), (m) => true)
 );

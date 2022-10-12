@@ -2,12 +2,15 @@ export type StoredValue = string;
 
 export type ModelTypeOf<M> = M extends CreatedModel<infer T, any> ? T : never;
 
+type VersionizedData<T> = { _version: number } & T;
+type MaybeVersionizedData<T> = { _version?: number } & T;
+
 export interface CreateModelInterface<T, P> {
   $: {
     sample: () => T;
     toStore: { (e: T): StoredValue };
-    fromStore: { (s: StoredValue): T };
-    migrate: { (D: { _version: number } & P): T };
+    fromStore: { (s: StoredValue): VersionizedData<T> };
+    migrate: { (D: { _version?: number } & P): VersionizedData<T> };
     version: number;
   };
 }
@@ -34,33 +37,40 @@ function curryMigrate<T, P>(model: CreateModelInterface<T, P>) {
     fromStore?: { (s: StoredValue): X };
   }): CreatedModel<X, T> {
     const version = model.$.version + 1;
+    const migrate = (
+      data: { _version?: number } & (P | T)
+    ): VersionizedData<X> => {
+      // bypass for good data
+      if (data._version === version) return data as VersionizedData<X>;
+
+      const prevAtLeast = model.$.migrate(data as MaybeVersionizedData<P>);
+      if (!prevAtLeast._version || prevAtLeast._version < version) {
+        if (prevAtLeast._version && prevAtLeast._version + 1 !== version) {
+          console.warn(
+            "Weird migration, version applied out of order? got %d, expected %d, applying %d",
+            prevAtLeast._version,
+            prevAtLeast._version + 1,
+            version
+          );
+        }
+        return {
+          ...opts.migrate(prevAtLeast as VersionizedData<T>),
+          _version: version,
+        };
+      }
+      // need to cast here, typescript wise, this would never really happen,
+      // but this whole migration library is meant to handle old data with
+      // new code, and therefore, data could either be
+      return data as VersionizedData<X>;
+    };
     const migratedModel: CreateModelInterface<X, T> = {
       $: {
         ...model.$,
         sample: () => opts.sample(model.$.sample()),
         version,
-        toStore: opts.toStore ?? ((e) => JSON.stringify(e)),
-        fromStore: opts.fromStore ?? ((s) => JSON.parse(s) as X),
-        migrate: (data) => {
-          if (data._version < version) {
-            if (data._version + 1 !== version) {
-              console.warn(
-                "Weird migration, version applied out of order? got %d, expected %d, applying %d",
-                data._version,
-                data._version + 1,
-                version
-              );
-            }
-            return {
-              ...opts.migrate(data),
-              _version: version,
-            };
-          }
-          // need to cast here, typescript wise, this would never really happen,
-          // but this whole migration library is meant to handle old data with
-          // new code, and therefore, data could either be
-          return data as X;
-        },
+        toStore: curryToStore(opts.toStore ?? JSON.stringify, version),
+        fromStore: curryFromStore(opts.fromStore ?? JSON.parse, migrate),
+        migrate,
       },
     };
 
@@ -79,10 +89,10 @@ export function createModel<T>(opts: {
   const model: CreateModelInterface<T, {}> = {
     $: {
       sample: opts.sample,
-      toStore: opts.toStore ?? JSON.stringify,
-      fromStore: opts.fromStore ?? JSON.parse,
-      migrate: (d) => {
-        return { ...d, _version: 1 } as T;
+      toStore: curryToStore(opts.toStore ?? JSON.stringify, 1),
+      fromStore: curryFromStore(opts.fromStore ?? JSON.parse, (e) => e),
+      migrate: (d: MaybeVersionizedData<{}>) => {
+        return { ...d, _version: 1 } as VersionizedData<T>;
       },
       version: 1,
     },
@@ -93,3 +103,16 @@ export function createModel<T>(opts: {
     $migrate: curryMigrate(model),
   };
 }
+
+const curryToStore =
+  <T>(serialize: { (data: T): string }, version: number) =>
+  (data: T) =>
+    serialize({ ...data, _version: version });
+
+const curryFromStore =
+  <T, P>(
+    deserialize: { (raw: string): T | P },
+    migrate: { (parsed: T | P): T }
+  ) =>
+  (raw: string) =>
+    migrate(deserialize(raw));

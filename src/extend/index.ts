@@ -5,7 +5,6 @@ export {
   InMemoryStore,
   LocalStorageStore,
   SessionStorageStore,
-  SpecializedStore,
 } from "./StoreContext";
 export { ModelList } from "./ModelList";
 
