@@ -7,6 +7,7 @@ export interface useModelOptions<T> {
   // if a blank slate is prefered, set this to true
   blank?: boolean;
   request?: ModelRequestFound<T>;
+  index?: [keyof T, string];
   onChange?: {
     (action: "created" | "updated" | "deleted", id: string, entry: T): void;
   };

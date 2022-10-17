@@ -7,6 +7,8 @@ export interface CreateModelInterface<T, P> {
     toStore: { (e: T): StoredValue };
     fromStore: { (s: StoredValue): VersionizedData<T> };
     migrate: { (D: { _version?: number } & P): VersionizedData<T> };
+    indexes?: Array<keyof T>;
+    name: string;
     version: number;
   };
 }

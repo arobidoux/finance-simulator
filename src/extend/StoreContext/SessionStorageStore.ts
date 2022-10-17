@@ -11,13 +11,18 @@ export class SessionStorageStore extends InMemoryStore {
   }
 
   protected async beforeRead(): Promise<void> {
-    const raw = this._store.getItem(this._storageKey);
-    if (raw) {
-      this.data = JSON.parse(raw);
-    }
+    const rawData = this._store.getItem(this._storageKey);
+    if (rawData) this.data = JSON.parse(rawData);
+
+    const rawIndexes = this._store.getItem(this._storageKey + "-indexes");
+    if (rawIndexes) this.indexes = JSON.parse(rawIndexes);
   }
   protected async afterChange(): Promise<void> {
     this._store.setItem(this._storageKey, JSON.stringify(this.data));
+    this._store.setItem(
+      this._storageKey + "-indexes",
+      JSON.stringify(this.indexes)
+    );
   }
 
   protected loadMeta() {
@@ -48,8 +53,8 @@ export class SessionStorageStore extends InMemoryStore {
     return this.withMeta(() => super.generateId());
   }
 
-  async deleteAll(): Promise<boolean> {
-    const r = await super.deleteAll();
+  async deleteAll(indexes?: Record<string, string>): Promise<boolean> {
+    const r = await super.deleteAll(indexes);
     this.saveMeta();
     return r;
   }

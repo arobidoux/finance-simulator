@@ -57,8 +57,15 @@ function curryMigrate<T, P>(model: CreateModelInterface<T, P>) {
   };
 }
 
-export function createModel<T>(opts: {
+type AllowedModelType = Record<
+  string,
+  string | number | Date | boolean | null | Array<any> | Record<string, any>
+>;
+
+export function createModel<T extends AllowedModelType>(opts: {
   sample: () => T;
+  name?: string;
+  indexes?: Array<keyof T>;
   toStore?: { (entry: T): StoredValue };
   fromStore?: { (storedEntry: StoredValue): T };
 }): CreatedModel<T, {}> {
@@ -70,6 +77,8 @@ export function createModel<T>(opts: {
       migrate: (d: MaybeVersionizedData<{}>) => {
         return { ...d, _version: 1 } as VersionizedData<T>;
       },
+      indexes: opts.indexes,
+      name: opts.name ?? opts.sample.name ?? "anonymous",
       version: 1,
     },
   };

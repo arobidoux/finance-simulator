@@ -16,16 +16,18 @@ export class FormatedStoreInterface<T, P> implements StoreInterface<T> {
     return this.store.onReloadNeeded(handle);
   }
   // forward all of these
-  add(data: T): Promise<{ id: string }> {
-    return this.store.add(this.model.$.toStore(data));
+  add(data: T, indexes?: Record<string, string>): Promise<{ id: string }> {
+    // TODO look to get the indexes information from the data instead?
+    return this.store.add(this.model.$.toStore(data), indexes);
   }
   async get(id: string): Promise<T | null> {
     const data = await this.store.get(id);
     if (data) return this.inflateData(data);
     return null;
   }
-  set(id: string, data: T): Promise<boolean> {
-    return this.store.set(id, this.model.$.toStore(data));
+  set(id: string, data: T, indexes?: Record<string, string>): Promise<boolean> {
+    // TODO look to get the indexes information from the data instead?
+    return this.store.set(id, this.model.$.toStore(data), indexes);
   }
   protected formatListResult(
     paginatedResult: PaginatedResult<string>
@@ -44,14 +46,19 @@ export class FormatedStoreInterface<T, P> implements StoreInterface<T> {
     //     page(n).then((p) => this.formatListResult(p));
     return result;
   }
-  list(paginateToken?: string): Promise<PaginatedResult<T>> {
-    return this.store.list(paginateToken).then((p) => this.formatListResult(p));
+  list(
+    paginateToken?: string,
+    index?: [key: string, value: string]
+  ): Promise<PaginatedResult<T>> {
+    return this.store
+      .list(paginateToken, index)
+      .then((p) => this.formatListResult(p));
   }
 
   delete(id: string): Promise<boolean> {
     return this.store.delete(id);
   }
-  deleteAll(): Promise<boolean> {
-    return this.store.deleteAll();
+  deleteAll(indexes?: Record<string, string>): Promise<boolean> {
+    return this.store.deleteAll(indexes);
   }
 }

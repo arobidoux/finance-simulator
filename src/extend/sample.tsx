@@ -12,6 +12,7 @@ import { StoreContext, InMemoryStore } from "./StoreContext";
  */
 
 const memberModel = createModel({
+  name: "member",
   sample: () => {
     return {
       name: "John Smith",

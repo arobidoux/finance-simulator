@@ -28,6 +28,9 @@ type useModelReducerAction<T, K extends keyof T> =
   | { action: "update"; key: K; value: T[K] }
   | { action: "set-request"; request: ModelRequest<T>; entry: T | null };
 
+function isDifferent<T>(a: T, b: T): boolean {
+  return a !== b;
+}
 function useModelReducer<T>(
   state: useModelReducerState<T>,
   action: useModelReducerAction<T, keyof T>
@@ -49,7 +52,7 @@ function useModelReducer<T>(
     case "update":
       if (
         !("result" in state.request) ||
-        state.request.result[action.key] !== action.value
+        isDifferent(state.request.result[action.key], action.value)
       ) {
         // only add values that changed
         return {
@@ -127,6 +130,7 @@ export function useModel<T, P>(
         .get(optsId)
         .then((result) => {
           if (result) {
+            setDocId(optsId);
             dispatch({
               action: "set-request",
               request: {
@@ -137,6 +141,7 @@ export function useModel<T, P>(
               entry: result,
             });
           } else {
+            setDocId(null);
             dispatch({
               action: "set-request",
               request: {
@@ -147,11 +152,18 @@ export function useModel<T, P>(
           }
         });
     } else if (!optsRequest) {
+      setDocId(null);
       dispatch({
         action: "new",
       });
     } else {
-      // we assume the provided request had the
+      // we assume the provided request had the entry
+      setDocId(optsRequest.id);
+      dispatch({
+        action: "set-request",
+        entry: optsRequest.result,
+        request: optsRequest,
+      });
     }
   }, [storeContext, model, optsId, optsRequest, dispatch]);
 
@@ -194,7 +206,13 @@ export function useModel<T, P>(
         if (docId)
           updatePromise = storeContext
             .forModel(model)
-            .set(docId, newEntry)
+            .set(
+              docId,
+              newEntry,
+              opts?.index
+                ? { [opts.index[0].toString()]: opts.index[1] }
+                : undefined
+            )
             .then(async (success) => {
               if (!success) throw Promise.reject("failed to save the document");
               return { entry: newEntry, id: docId, action: "updated" };
@@ -203,7 +221,12 @@ export function useModel<T, P>(
           // TODO check to comunicate creation of document id to parent?
           updatePromise = storeContext
             .forModel(model)
-            .add(newEntry)
+            .add(
+              newEntry,
+              opts?.index
+                ? { [opts.index[0].toString()]: opts.index[1] }
+                : undefined
+            )
             .then(({ id }) => {
               setDocId(id);
               return { entry: newEntry, id, action: "created" };

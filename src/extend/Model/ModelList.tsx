@@ -19,6 +19,12 @@ import { ModelRequestStatuses } from "./ModelRequestStatuses";
 export function ModelList<T, P>(
   props: PropsWithChildren<{
     model: CreatedModel<T, P>;
+    // tehcnically, this would only be the values that were indexed from the
+    // model, and not any of it's key...
+    //
+    // define the value of the index needed to load the list of entries, and
+    // what value should be set whenever a new entry is created
+    index?: [keyof T, string];
     loadNonce?: string | number | Date;
     loadPageToken?: string | null;
     onPageChange?: (meta: PaginatedMeta & { entryCount: number }) => void;
@@ -55,7 +61,10 @@ export function ModelList<T, P>(
   useEffect(() => {
     storeContext
       .forModel(props.model)
-      .list(props.loadPageToken ?? undefined)
+      .list(
+        props.loadPageToken ?? undefined,
+        props.index ? [props.index[0].toString(), props.index[1]] : undefined
+      )
       .then((page) => {
         const { entries, ...meta } = page;
         dispatch({
@@ -84,10 +93,10 @@ export function ModelList<T, P>(
   const newEntryComponent = useMemo(
     () =>
       cloneElement(
-        child as ReactElement<{ useModelOpts?: useModelOptions<T> }>,
+        child as ReactElement<{ useModelOptions?: useModelOptions<T> }>,
         {
           key: "new-" + created,
-          useModelOpts: {
+          useModelOptions: {
             onCreate: (id: string, result: T) => {
               dispatch({
                 action: "add",
@@ -95,10 +104,11 @@ export function ModelList<T, P>(
               });
               setCreated(created + 1);
             },
+            index: props.index,
           },
         }
       ),
-    [child, dispatch, created, setCreated]
+    [child, dispatch, created, setCreated, props.index]
   );
 
   return (
@@ -106,12 +116,13 @@ export function ModelList<T, P>(
       {entries.map((request) =>
         cloneElement(
           child as ReactElement<{
-            useModelOpts?: useModelOptions<T>;
+            useModelOptions?: useModelOptions<T>;
           }>,
           {
             key: request.id,
-            useModelOpts: {
+            useModelOptions: {
               request,
+              index: props.index,
               onDelete: () => {
                 dispatch({ action: "remove", id: request.id });
               },
