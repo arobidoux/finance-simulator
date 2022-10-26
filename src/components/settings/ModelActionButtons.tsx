@@ -11,13 +11,12 @@ export function ModelActionButtons(props: {
 }) {
   return (
     <>
-      <button
-        type="button"
-        onClick={() => props.$model.reset()}
-        disabled={!props.$model.hasChanges()}
-      >
-        Discard changes
-      </button>
+      {props.$model.request.status === ModelRequestStatuses.FOUND &&
+        props.$model.hasChanges() && (
+          <button type="button" onClick={() => props.$model.reset()}>
+            Discard changes
+          </button>
+        )}
       <button
         type="button"
         onClick={() => props.$model.commit()}

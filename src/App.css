@@ -9,3 +9,10 @@ body,
 #root {
   height: 100%;
 }
+
+.new-entry {
+  opacity: 0.75;
+}
+.new-entry:hover {
+  opacity: 1;
+}

@@ -89,7 +89,7 @@ export function ModelModalWithSelector<T, P>(props: {
       )
       .then((page) => {
         const { entries, ...meta } = page;
-        if (currentModel === null && entries.length)
+        if (entries.length)
           setCurrentModel({
             status: ModelRequestStatuses.FOUND,
             id: entries[0].id,

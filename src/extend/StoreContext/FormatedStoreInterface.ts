@@ -5,9 +5,15 @@ import { StoreInterface } from "./StoreInterface";
 export class FormatedStoreInterface<T, P> implements StoreInterface<T> {
   private model: CreatedModel<T, P>;
   store: StoreInterface<string>;
-  constructor(model: CreatedModel<T, P>, store: StoreInterface<string>) {
+  onAnyChanges: () => void;
+  constructor(
+    model: CreatedModel<T, P>,
+    store: StoreInterface<string>,
+    onAnyChanges: { (): void }
+  ) {
     this.model = model;
     this.store = store;
+    this.onAnyChanges = onAnyChanges;
   }
   protected inflateData(data: string): T {
     return this.model.$.fromStore(data);
@@ -18,7 +24,9 @@ export class FormatedStoreInterface<T, P> implements StoreInterface<T> {
   // forward all of these
   add(data: T, indexes?: Record<string, string>): Promise<{ id: string }> {
     // TODO look to get the indexes information from the data instead?
-    return this.store.add(this.model.$.toStore(data), indexes);
+    const r = this.store.add(this.model.$.toStore(data), indexes);
+    this.onAnyChanges();
+    return r;
   }
   async get(id: string): Promise<T | null> {
     const data = await this.store.get(id);
@@ -27,7 +35,9 @@ export class FormatedStoreInterface<T, P> implements StoreInterface<T> {
   }
   set(id: string, data: T, indexes?: Record<string, string>): Promise<boolean> {
     // TODO look to get the indexes information from the data instead?
-    return this.store.set(id, this.model.$.toStore(data), indexes);
+    const r = this.store.set(id, this.model.$.toStore(data), indexes);
+    this.onAnyChanges();
+    return r;
   }
   protected formatListResult(
     paginatedResult: PaginatedResult<string>
@@ -56,9 +66,13 @@ export class FormatedStoreInterface<T, P> implements StoreInterface<T> {
   }
 
   delete(id: string): Promise<boolean> {
-    return this.store.delete(id);
+    const r = this.store.delete(id);
+    this.onAnyChanges();
+    return r;
   }
   deleteAll(indexes?: Record<string, string>): Promise<boolean> {
-    return this.store.deleteAll(indexes);
+    const r = this.store.deleteAll(indexes);
+    this.onAnyChanges();
+    return r;
   }
 }

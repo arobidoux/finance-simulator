@@ -1,32 +1,16 @@
-import {
-  createModel,
-  ModelTypeOf,
-  useModel,
-  useModelOptions,
-} from "../../extend";
-import { Account as FinanceAccount } from "../../finance-simulator";
+import { ModelTypeOf, useModel, useModelOptions } from "../../extend";
+import { AccountModel } from "../../models/AccountModel";
+
 import { ModelActionButtons } from "./ModelActionButtons";
 
-export const accountModel = createModel({
-  name: "account",
-  indexes: ["memberId"],
-  sample: (): { memberId: string } & Omit<FinanceAccount, "uuid"> => {
-    return {
-      memberId: "mem-123",
-      label: "EOP",
-      type: "checking",
-      interest: null,
-    };
-  },
-});
 export function MemberAccount(props: {
-  useModelOptions?: useModelOptions<ModelTypeOf<typeof accountModel>>;
+  useModelOptions?: useModelOptions<ModelTypeOf<typeof AccountModel>>;
 }) {
   const {
     entry: account,
     update,
     ...$account
-  } = useModel(accountModel, props.useModelOptions);
+  } = useModel(AccountModel, props.useModelOptions);
 
   return (
     <form
@@ -34,6 +18,7 @@ export function MemberAccount(props: {
         ev.preventDefault();
         console.log("saving account");
       }}
+      className={$account.id ? "" : "new-entry"}
     >
       <label>
         {" "}
@@ -47,14 +32,11 @@ export function MemberAccount(props: {
       <label>
         {" "}
         Type{" "}
-        <select
+        <input
           value={account?.type ?? ""}
           onChange={(ev) => update("type", ev.target.value)}
-        >
-          <option value="checking">Checking</option>
-          <option value="saving">Saving</option>
-          <option value="other">Other</option>
-        </select>
+          list="account-type-data-list"
+        ></input>
       </label>
 
       <ModelActionButtons $model={$account}></ModelActionButtons>

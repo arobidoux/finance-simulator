@@ -50,8 +50,52 @@ export class BaseStoreContext implements StoreContextInterface {
         // see if we have one for this model already
       } else store = this._store;
 
-      return new FormatedStoreInterface(model, store);
+      return new FormatedStoreInterface(model, store, () =>
+        this.notifyChangesFor(model)
+      );
     } else if (this._parent) return this._parent.forModel(model);
     else throw new Error("No store available for the requested model");
+  }
+
+  protected notifyChangesFor<T, P>(model: CreatedModel<T, P>) {
+    this.listeners.forEach((listener) => {
+      if (listener.filter(model)) listener.handle();
+    });
+  }
+
+  protected listeners: Array<{
+    filter: { (model: CreatedModel<any, any>): boolean };
+    handle: { (): any };
+  }> = [];
+
+  registerForChangesOn(
+    model: CreatedModel<any, any> | Array<CreatedModel<any, any>>,
+    handle: { (): any }
+  ): { (): void } {
+    if (model instanceof Array) {
+      const unregisterHandles: Array<{ (): void }> = model.map((m) =>
+        this.registerForChangesOn(m, handle)
+      );
+      return () => unregisterHandles.forEach((h) => h());
+    }
+
+    if (!this._model(model)) {
+      if (this._parent) return this._parent.registerForChangesOn(model, handle);
+      throw new Error("No store available for this model");
+    }
+
+    const listener = {
+      filter: (m: CreatedModel<any, any>) => m === model,
+      handle,
+    };
+    this.listeners.push(listener);
+
+    return () => {
+      const idx = this.listeners.findIndex((l) => l === listener);
+      if (idx === -1) {
+        throw new Error("this should not happen");
+      }
+      this.listeners.splice(idx, 1);
+    };
   }
 }

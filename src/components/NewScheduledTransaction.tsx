@@ -25,7 +25,6 @@ export function NewScheduledTransaction(props: {
     if (!toAccountId) throw new Error("please select toAccountId");
 
     props.newEntry({
-      createdOn: new Date(),
       schedule,
       details: {
         amount,

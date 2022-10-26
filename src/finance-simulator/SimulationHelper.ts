@@ -84,7 +84,6 @@ export class SimulationHelper extends Simulation {
       // schedule the initial transaction
       seedTransactionId = this.addScheduledTransaction({
         details: loanTransaction,
-        createdOn: new Date(),
         schedule: {
           period: "once",
           startAt: loan.startDate,
@@ -94,7 +93,6 @@ export class SimulationHelper extends Simulation {
 
     if (loan.payBack) {
       payBackTransactionId = this.addScheduledTransaction({
-        createdOn: new Date(),
         details: {
           amount: loan.payBack.amount,
           fromAccountId: loan.payBack.fromAccountId ?? loan.toAccountId,
@@ -117,7 +115,6 @@ export class SimulationHelper extends Simulation {
 
   addSalary(salary: Salary) {
     const scheduledTransactionId = this.addScheduledTransaction({
-      createdOn: new Date(),
       details: {
         amount: salary.amount,
         fromAccountId: "boss",
@@ -132,7 +129,6 @@ export class SimulationHelper extends Simulation {
 
   addSavings(saving: Saving) {
     const scheduledTransactionId = this.addScheduledTransaction({
-      createdOn: new Date(),
       details: {
         amount: saving.amount,
         fromAccountId: saving.fromAccountId,

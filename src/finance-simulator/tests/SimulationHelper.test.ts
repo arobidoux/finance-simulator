@@ -62,7 +62,6 @@ it("can handle a simple loan", () => {
   });
 
   s.addScheduledTransaction({
-    createdOn: new Date(),
     details: {
       amount: 75,
       fromAccountId: accountId,

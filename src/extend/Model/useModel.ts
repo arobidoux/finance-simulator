@@ -16,6 +16,8 @@ import { ModelRequestStatuses } from "./ModelRequestStatuses";
 import { useModelOptions } from "./useModelOptions";
 import { useModelResult } from "./useModelResult";
 
+import { NestedUpdateHandle } from "./useModelResult";
+
 interface useModelReducerState<T> {
   request: ModelRequest<T>;
   draft: Partial<T>;
@@ -191,13 +193,18 @@ export function useModel<T, P>(
     entry: entry,
     request: request,
     error: error,
-    update: <K extends keyof T>(key: K, value: T[K]) =>
-      dispatch({ action: "update", key, value }),
+    // update: <K extends keyof T>(key: K, value: T[K]) =>
+    //   dispatch({ action: "update", key, value }),
+    update: curryUpdateHandle(dispatch, entry as T),
     commit: () => {
       if (hasChanges()) {
         // TODO ensure we do not double commit
         // Check to ensure promises won't cause a problem here..
-        const newEntry = { ...entry } as T;
+        const indexes = opts?.index
+          ? { [opts.index[0].toString()]: opts.index[1] }
+          : undefined;
+
+        const newEntry = { ...entry, ...indexes } as T;
         let updatePromise: Promise<{
           entry: T;
           id: string;
@@ -206,13 +213,7 @@ export function useModel<T, P>(
         if (docId)
           updatePromise = storeContext
             .forModel(model)
-            .set(
-              docId,
-              newEntry,
-              opts?.index
-                ? { [opts.index[0].toString()]: opts.index[1] }
-                : undefined
-            )
+            .set(docId, newEntry, indexes)
             .then(async (success) => {
               if (!success) throw Promise.reject("failed to save the document");
               return { entry: newEntry, id: docId, action: "updated" };
@@ -221,12 +222,7 @@ export function useModel<T, P>(
           // TODO check to comunicate creation of document id to parent?
           updatePromise = storeContext
             .forModel(model)
-            .add(
-              newEntry,
-              opts?.index
-                ? { [opts.index[0].toString()]: opts.index[1] }
-                : undefined
-            )
+            .add(newEntry, indexes)
             .then(({ id }) => {
               setDocId(id);
               return { entry: newEntry, id, action: "created" };
@@ -283,4 +279,44 @@ export function useModel<T, P>(
       return Promise.resolve({ deleted: false });
     },
   };
+}
+
+function curryUpdateHandle<PT, K extends keyof PT>(
+  dispatch: Dispatch<useModelReducerAction<PT, K>>,
+  entry: PT | null
+) {
+  function update(key: K): NestedUpdateHandle<PT[K]>;
+  function update(key: K, value: PT[K]): void;
+  function update(key: K, value?: PT[K]) {
+    if (typeof value === "undefined")
+      return curryNestedUpdate(entry?.[key], (value) =>
+        dispatch({ action: "update", key, value })
+      );
+
+    dispatch({ action: "update", key, value });
+    return;
+  }
+  return update;
+}
+
+function curryNestedUpdate<T>(
+  value: T | undefined,
+  onValue: { (data: T): void }
+) {
+  function update<K extends keyof T>(subKey: K): NestedUpdateHandle<T[K]>;
+  function update<K extends keyof T>(subKey: K, subValue: T[K]): void;
+  function update<K extends keyof T>(
+    subKey: K,
+    subValue?: T[K]
+  ): NestedUpdateHandle<T[K]> | void {
+    if (typeof subValue !== "undefined") {
+      onValue({ ...value, [subKey]: subValue } as T);
+      return;
+    }
+    return curryNestedUpdate(value?.[subKey] as T[K] | undefined, (newValue) =>
+      onValue({ ...value, [subKey]: newValue } as T)
+    );
+  }
+
+  return update;
 }

@@ -4,7 +4,8 @@ export interface useModelResult<T> {
   id: string | null;
   entry: Partial<T> | T | null;
   error: null | string;
-  update: { <K extends keyof T>(key: K, value: T[K]): void };
+  // update: { <K extends keyof T>(key: K, value: T[K]): void };
+  update: NestedUpdateHandle<T>;
   // store new version
   commit: {
     (): Promise<
@@ -22,3 +23,9 @@ export interface useModelResult<T> {
   hasChanges: { (key?: string): boolean };
   request: ModelRequest<T>;
 }
+
+export type NestedUpdateHandle<T> = {
+  <K extends keyof T>(key: K, value: T[K]): void;
+  <K extends keyof T>(key: K): NestedUpdateHandle<T[K]>;
+  <K extends keyof T>(key: K, value?: T[K]): void | NestedUpdateHandle<T[K]>;
+};

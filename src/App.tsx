@@ -1,6 +1,6 @@
 import "./App.css";
 import { useContext } from "react";
-import { FinanceSimulationExplorer } from "./components/FinanceSimulationExplorer";
+import { FinanceDashboard } from "./components/FinanceDashboard";
 import { StoreContext, SessionStorageStore } from "./extend";
 
 function App() {
@@ -13,7 +13,7 @@ function App() {
   return (
     <StoreContext.Provider value={store}>
       <div className="App">
-        <FinanceSimulationExplorer></FinanceSimulationExplorer>
+        <FinanceDashboard></FinanceDashboard>
       </div>
     </StoreContext.Provider>
   );
