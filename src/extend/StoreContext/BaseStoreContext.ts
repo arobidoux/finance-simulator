@@ -7,6 +7,10 @@ import { FormatedStoreInterface } from "./FormatedStoreInterface";
 interface StoreProvider {
   <T, P>(model: CreatedModel<T, P>): StoreInterface;
 }
+
+export interface OnChangeHandle {
+  (action: "create" | "update" | "delete", id: string): any;
+}
 export class BaseStoreContext implements StoreContextInterface {
   private _store: StoreInterface | StoreProvider;
   private _providedStores: Array<{
@@ -50,27 +54,30 @@ export class BaseStoreContext implements StoreContextInterface {
         // see if we have one for this model already
       } else store = this._store;
 
-      return new FormatedStoreInterface(model, store, () =>
-        this.notifyChangesFor(model)
+      return new FormatedStoreInterface(model, store, (action, id) =>
+        this.notifyChangesFor(model, [action, id])
       );
     } else if (this._parent) return this._parent.forModel(model);
     else throw new Error("No store available for the requested model");
   }
 
-  protected notifyChangesFor<T, P>(model: CreatedModel<T, P>) {
+  protected notifyChangesFor<T, P>(
+    model: CreatedModel<T, P>,
+    args: Parameters<OnChangeHandle>
+  ) {
     this.listeners.forEach((listener) => {
-      if (listener.filter(model)) listener.handle();
+      if (listener.filter(model)) listener.handle(...args);
     });
   }
 
   protected listeners: Array<{
     filter: { (model: CreatedModel<any, any>): boolean };
-    handle: { (): any };
+    handle: OnChangeHandle;
   }> = [];
 
   registerForChangesOn(
     model: CreatedModel<any, any> | Array<CreatedModel<any, any>>,
-    handle: { (): any }
+    handle: OnChangeHandle
   ): { (): void } {
     if (model instanceof Array) {
       const unregisterHandles: Array<{ (): void }> = model.map((m) =>

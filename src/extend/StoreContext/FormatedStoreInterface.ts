@@ -1,15 +1,16 @@
 import { CreatedModel } from "../Model/CreatedModel";
+import { OnChangeHandle } from "./BaseStoreContext";
 import { PaginatedResult } from "./PaginatedResult";
 import { StoreInterface } from "./StoreInterface";
 
 export class FormatedStoreInterface<T, P> implements StoreInterface<T> {
   private model: CreatedModel<T, P>;
   store: StoreInterface<string>;
-  onAnyChanges: () => void;
+  onAnyChanges: OnChangeHandle;
   constructor(
     model: CreatedModel<T, P>,
     store: StoreInterface<string>,
-    onAnyChanges: { (): void }
+    onAnyChanges: OnChangeHandle
   ) {
     this.model = model;
     this.store = store;
@@ -25,7 +26,7 @@ export class FormatedStoreInterface<T, P> implements StoreInterface<T> {
   add(data: T, indexes?: Record<string, string>): Promise<{ id: string }> {
     // TODO look to get the indexes information from the data instead?
     const r = this.store.add(this.model.$.toStore(data), indexes);
-    this.onAnyChanges();
+    r.then(({ id }) => this.onAnyChanges("create", id));
     return r;
   }
   async get(id: string): Promise<T | null> {
@@ -33,10 +34,16 @@ export class FormatedStoreInterface<T, P> implements StoreInterface<T> {
     if (data) return this.inflateData(data);
     return null;
   }
-  set(id: string, data: T, indexes?: Record<string, string>): Promise<boolean> {
+  set(
+    id: string,
+    data: T,
+    indexes?: Record<string, string>
+  ): Promise<"created" | "updated"> {
     // TODO look to get the indexes information from the data instead?
     const r = this.store.set(id, this.model.$.toStore(data), indexes);
-    this.onAnyChanges();
+    r.then((action) =>
+      this.onAnyChanges(action === "created" ? "create" : "update", id)
+    );
     return r;
   }
   protected formatListResult(
@@ -64,15 +71,14 @@ export class FormatedStoreInterface<T, P> implements StoreInterface<T> {
       .list(paginateToken, index)
       .then((p) => this.formatListResult(p));
   }
-
   delete(id: string): Promise<boolean> {
     const r = this.store.delete(id);
-    this.onAnyChanges();
+    r.then((success) => success && this.onAnyChanges("delete", id));
     return r;
   }
   deleteAll(indexes?: Record<string, string>): Promise<boolean> {
     const r = this.store.deleteAll(indexes);
-    this.onAnyChanges();
+    r.then((success) => success && this.onAnyChanges("delete", ""));
     return r;
   }
 }

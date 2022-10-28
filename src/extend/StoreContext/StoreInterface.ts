@@ -4,7 +4,9 @@ export interface StoreInterface<T = string> {
   add: { (data: T, indexes?: Record<string, string>): Promise<{ id: string }> };
   get: { (id: string): Promise<T | null> };
   set: {
-    (id: string, data: T, indexes?: Record<string, string>): Promise<boolean>;
+    (id: string, data: T, indexes?: Record<string, string>): Promise<
+      "created" | "updated"
+    >;
   };
   list: {
     (paginateToken?: string, index?: [key: string, value: string]): Promise<

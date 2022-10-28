@@ -278,8 +278,34 @@ export function useModel<T, P>(
       }
       return Promise.resolve({ deleted: false });
     },
+    toForeignIndexFor: <ST, SP, K extends keyof ST>(
+      foreignModel: CreatedModel<ST, SP>,
+      key: K
+    ): indexWithForeign<K> => {
+      if (!docId)
+        throw new Error(
+          "cannot create foreign index without an id. Ensure this is only called when the id is not null"
+        );
+
+      return Object.assign([key, docId], {
+        onDelete: (handle: { (): void }) => {
+          const d = storeContext.registerForChangesOn(model, (action, id) => {
+            if (action === "delete" && id === docId) {
+              handle();
+            }
+          });
+          return () => {
+            d();
+          };
+        },
+      }) as indexWithForeign<K>;
+    },
   };
 }
+
+type indexWithForeign<K> = [K, string] & {
+  onDelete: { (handle: { (entryId: string): void }): { (): void } };
+};
 
 function curryUpdateHandle<PT, K extends keyof PT>(
   dispatch: Dispatch<useModelReducerAction<PT, K>>,

@@ -1,8 +1,8 @@
 import { createModel } from "../extend";
 import { Schedule, TransactionDetails } from "../finance-simulator";
 
-export const RevenueModel = createModel({
-  name: "revenue",
+export const ScheduledTransactionModel = createModel({
+  name: "scheduled-transaction",
   indexes: ["memberId"],
   sample: (): {
     memberId: string;

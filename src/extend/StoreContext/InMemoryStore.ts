@@ -86,7 +86,7 @@ export class InMemoryStore implements StoreInterface {
     id: string,
     data: string,
     indexes?: Record<string, string>
-  ): Promise<boolean> {
+  ): Promise<"created" | "updated"> {
     const idx = this.data.findIndex((d) => d.id === id);
     if (idx !== -1) this.data[idx].data = data;
     else this.data.push({ id, data });
@@ -100,7 +100,7 @@ export class InMemoryStore implements StoreInterface {
     this._opts?.warnOnUse &&
       console.warn("Setting data to InMemoryStore", { id, data });
     await this.afterChange(id, data, indexes);
-    return true;
+    return idx === -1 ? "created" : "updated";
   }
 
   async delete(id: string): Promise<boolean> {

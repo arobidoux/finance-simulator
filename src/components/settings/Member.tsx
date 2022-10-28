@@ -8,8 +8,10 @@ import {
 import { AccountModel } from "../../models/AccountModel";
 import { MemberModel } from "../../models/MemberModel";
 import { RevenueModel } from "../../models/RevenueModel";
+import { ScheduledTransactionModel } from "../../models/ScheduledTransactionModel";
 import { MemberAccount } from "./MemberAccount";
 import { MemberRevenue } from "./MemberRevenue";
+import { MemberScheduledTransaction } from "./MemberScheduledTransaction";
 import { ModelActionButtons } from "./ModelActionButtons";
 
 export function Member(props: {
@@ -44,30 +46,46 @@ export function Member(props: {
             onChange={(ev) => update("name", ev.target.value)}
           />
         </label>{" "}
+        <ModelActionButtons $model={$member}></ModelActionButtons>
       </form>
       {$member.request.status === ModelRequestStatuses.FOUND && $member.id && (
         <>
-          {/* <details>
-            <summary>Accounts</summary> */}
-          <ModelList model={AccountModel} index={["memberId", $member.id]}>
+          {/* <details> */}
+          <h3>Accounts</h3>
+          <ModelList
+            model={AccountModel}
+            index={$member.toForeignIndexFor(AccountModel, "memberId")}
+          >
             <MemberAccount></MemberAccount>
           </ModelList>
           {/* </details> */}
           <hr />
-          {/* <details>
-            <summary>Revenues</summary> */}
-          <ModelList model={RevenueModel} index={["memberId", $member.id]}>
+          {/* <details> */}
+          <h3>Revenues</h3>
+          <ModelList
+            model={RevenueModel}
+            index={$member.toForeignIndexFor(RevenueModel, "memberId")}
+          >
             <MemberRevenue memberId={$member.id}></MemberRevenue>
           </ModelList>
           {/* </details> */}
-          <details>
-            <summary>Savings</summary>
-            List of all savings here
-          </details>
+          {/* <details> */}
+          <h3>Scheduled Trnsactions</h3>
+          <ModelList
+            model={ScheduledTransactionModel}
+            index={$member.toForeignIndexFor(
+              ScheduledTransactionModel,
+              "memberId"
+            )}
+          >
+            <MemberScheduledTransaction
+              memberId={$member.id}
+            ></MemberScheduledTransaction>
+          </ModelList>
+          {/* </details> */}
           <br />
         </>
       )}
-      <ModelActionButtons $model={$member}></ModelActionButtons>
     </>
   );
 }

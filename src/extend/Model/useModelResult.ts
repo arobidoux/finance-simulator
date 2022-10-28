@@ -1,3 +1,4 @@
+import { CreatedModel } from "./CreatedModel";
 import { ModelRequest } from "./ModelRequest";
 
 export interface useModelResult<T> {
@@ -21,6 +22,12 @@ export interface useModelResult<T> {
   reset: { (): void };
   delete: { (): Promise<{ deleted: boolean }> };
   hasChanges: { (key?: string): boolean };
+  toForeignIndexFor: {
+    <ST, SP, K extends keyof ST>(model: CreatedModel<ST, SP>, key: K): [
+      K,
+      string
+    ] & { onDelete: { (handle: { (): void }): { (): void } } };
+  };
   request: ModelRequest<T>;
 }
 

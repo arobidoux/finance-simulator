@@ -24,7 +24,9 @@ export function ModelList<T, P>(
     //
     // define the value of the index needed to load the list of entries, and
     // what value should be set whenever a new entry is created
-    index?: [keyof T, string];
+    index?: [keyof T, string] & {
+      onDelete?: { (handle: { (): void }): { (): void } };
+    };
     loadNonce?: string | number | Date;
     loadPageToken?: string | null;
     onPageChange?: (meta: PaginatedMeta & { entryCount: number }) => void;
@@ -81,6 +83,17 @@ export function ModelList<T, P>(
           props.onPageChange({ ...meta, entryCount: entries.length });
       });
   }, [storeContext, props]);
+
+  useEffect(() => {
+    const index = props.index;
+    if (typeof index?.onDelete === "function") {
+      return index.onDelete(() => {
+        storeContext.forModel(props.model).deleteAll({
+          [index[0]]: index[1],
+        });
+      });
+    }
+  }, [storeContext, props.index, props.model]);
 
   const children = props.children;
   const child = useMemo(() => Children.only(children), [children]);
