@@ -70,7 +70,7 @@ export function Member(props: {
           </ModelList>
           {/* </details> */}
           {/* <details> */}
-          <h3>Scheduled Trnsactions</h3>
+          <h3>Scheduled Transactions</h3>
           <ModelList
             model={ScheduledTransactionModel}
             index={$member.toForeignIndexFor(

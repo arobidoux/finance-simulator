@@ -53,7 +53,7 @@ export function MemberRevenue(props: {
       </label>
         */}
       <ModelActionButtons $model={$revenue}></ModelActionButtons>
-      <pre>{JSON.stringify(revenue, null, 4)}</pre>
+      {/* <pre>{JSON.stringify(revenue, null, 4)}</pre> */}
     </form>
   );
 }

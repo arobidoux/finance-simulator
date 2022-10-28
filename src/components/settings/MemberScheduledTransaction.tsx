@@ -1,4 +1,5 @@
 import { ModelTypeOf, useModel, useModelOptions } from "../../extend";
+import { TransactionDetails } from "../../finance-simulator";
 import { ScheduledTransactionModel } from "../../models/ScheduledTransactionModel";
 
 import { ModelActionButtons } from "./ModelActionButtons";
@@ -20,6 +21,10 @@ export function MemberScheduledTransaction(props: {
     blank: true,
   });
 
+  const forcedDetails = {
+    type: "scheduled",
+  } as Partial<TransactionDetails>;
+
   return (
     <form
       onSubmit={(ev) => {
@@ -29,7 +34,8 @@ export function MemberScheduledTransaction(props: {
       className={$scx.id ? "" : "new-entry"}
     >
       <TransactionDetailsForm
-        details={scx?.details}
+        details={{ ...scx?.details, ...forcedDetails }}
+        forcedDetails={forcedDetails}
         update={update("details")}
         memberId={props.memberId}
       ></TransactionDetailsForm>

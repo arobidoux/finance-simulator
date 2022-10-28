@@ -171,7 +171,7 @@ export function TransactionDetailsForm(props: {
           placeholder="type"
         />
       )}
-      {typeof props.forcedDetails?.type === "undefined" && (
+      {typeof props.forcedDetails?.label === "undefined" && (
         <input
           type="text"
           value={props.details?.label ?? ""}
