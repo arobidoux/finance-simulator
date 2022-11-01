@@ -3,7 +3,7 @@ import { NestedUpdateHandle } from "../../extend/Model/useModelResult";
 import { Schedule } from "../../finance-simulator";
 
 export function ScheduleForm(props: {
-  schedule?: Partial<Schedule>;
+  schedule?: Partial<Schedule> | Schedule;
   update: NestedUpdateHandle<Schedule>;
 }) {
   const [endStyle, setEndStyle] = useState("none");

@@ -57,12 +57,7 @@ function curryMigrate<T, P>(model: CreateModelInterface<T, P>) {
   };
 }
 
-type AllowedModelType = Record<
-  string,
-  string | number | Date | boolean | null | Array<any> | Record<string, any>
->;
-
-export function createModel<T extends AllowedModelType>(opts: {
+export function createModel<T extends {}>(opts: {
   sample: () => T;
   name?: string;
   indexes?: Array<keyof T>;

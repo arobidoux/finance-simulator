@@ -17,6 +17,11 @@ export class BaseStoreContext implements StoreContextInterface {
     model: CreatedModel<any, any>;
     store: StoreInterface;
   }> = [];
+
+  private _providedStoreInterfaces: Array<{
+    model: CreatedModel<any, any>;
+    inter: FormatedStoreInterface<any, any>;
+  }> = [];
   private _parent?: BaseStoreContext;
   private _model: ModelFilter;
   constructor(
@@ -54,9 +59,18 @@ export class BaseStoreContext implements StoreContextInterface {
         // see if we have one for this model already
       } else store = this._store;
 
-      return new FormatedStoreInterface(model, store, (action, id) =>
+      const providedInterface = this._providedStoreInterfaces.find(
+        (a) => a.model === model
+      );
+      if (providedInterface)
+        return providedInterface.inter as StoreInterface<T>;
+
+      const inter = new FormatedStoreInterface(model, store, (action, id) =>
         this.notifyChangesFor(model, [action, id])
       );
+      this._providedStoreInterfaces.push({ model, inter });
+
+      return inter;
     } else if (this._parent) return this._parent.forModel(model);
     else throw new Error("No store available for the requested model");
   }

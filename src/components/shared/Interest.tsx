@@ -1,5 +1,5 @@
-import { Interest as FinanceInterest } from "../finance-simulator";
-import { Schedule } from "./Schedule";
+import { Interest as FinanceInterest } from "../../finance-simulator";
+import { Schedule } from "../Schedule";
 import { Rate } from "./Rate";
 
 export function Interest(props: { interest?: FinanceInterest | null }) {

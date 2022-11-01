@@ -1,10 +1,11 @@
-import { ModelTypeOf, useModel, useModelOptions } from "../../extend";
-import { TransactionDetails } from "../../finance-simulator";
-import { RevenueModel } from "../../models/RevenueModel";
+import { useCallback } from "react";
+import { ModelTypeOf, useModel, useModelOptions } from "../../../extend";
+import { TransactionDetails } from "../../../finance-simulator";
+import { RevenueModel } from "../../../models/RevenueModel";
 
-import { ModelActionButtons } from "./ModelActionButtons";
-import { ScheduleForm } from "./ScheduleForm";
-import { TransactionDetailsForm } from "./TransactionDetailsForm";
+import { ModelActionButtons } from "../../shared/ModelActionButtons";
+import { ScheduleForm } from "../../shared/ScheduleForm";
+import { TransactionDetailsForm } from "../../shared/TransactionDetailsForm";
 
 export function MemberRevenue(props: {
   useModelOptions?: useModelOptions<ModelTypeOf<typeof RevenueModel>>;
@@ -31,27 +32,16 @@ export function MemberRevenue(props: {
       <TransactionDetailsForm
         details={{ ...revenue?.details, ...forcedDetails }}
         forcedDetails={forcedDetails}
-        update={update("details")}
+        update={useCallback(() => update("details"), [update])}
         memberId={props.memberId}
         limitDestToMemberAccounts={true}
       ></TransactionDetailsForm>
 
       <ScheduleForm
         schedule={revenue?.schedule}
-        update={update("schedule")}
+        update={useCallback(() => update("schedule"), [update])}
       ></ScheduleForm>
 
-      {/* 
-      <label>
-        {" "}
-        Type{" "}
-        <input
-          value={account?.type ?? ""}
-          onChange={(ev) => update("type", ev.target.value)}
-          list="account-type-data-list"
-        ></input>
-      </label>
-        */}
       <ModelActionButtons $model={$revenue}></ModelActionButtons>
       {/* <pre>{JSON.stringify(revenue, null, 4)}</pre> */}
     </form>

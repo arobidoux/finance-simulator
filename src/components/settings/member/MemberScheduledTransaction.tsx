@@ -1,10 +1,10 @@
-import { ModelTypeOf, useModel, useModelOptions } from "../../extend";
-import { TransactionDetails } from "../../finance-simulator";
-import { ScheduledTransactionModel } from "../../models/ScheduledTransactionModel";
+import { ModelTypeOf, useModel, useModelOptions } from "../../../extend";
+import { TransactionDetails } from "../../../finance-simulator";
+import { ScheduledTransactionModel } from "../../../models/ScheduledTransactionModel";
 
-import { ModelActionButtons } from "./ModelActionButtons";
-import { ScheduleForm } from "./ScheduleForm";
-import { TransactionDetailsForm } from "./TransactionDetailsForm";
+import { ModelActionButtons } from "../../shared/ModelActionButtons";
+import { ScheduleForm } from "../../shared/ScheduleForm";
+import { TransactionDetailsForm } from "../../shared/TransactionDetailsForm";
 
 export function MemberScheduledTransaction(props: {
   useModelOptions?: useModelOptions<

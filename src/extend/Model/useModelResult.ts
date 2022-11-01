@@ -33,6 +33,8 @@ export interface useModelResult<T> {
 
 export type NestedUpdateHandle<T> = {
   <K extends keyof T>(key: K, value: T[K]): void;
-  <K extends keyof T>(key: K): NestedUpdateHandle<T[K]>;
-  <K extends keyof T>(key: K, value?: T[K]): void | NestedUpdateHandle<T[K]>;
+  <K extends keyof T>(key: K): NestedUpdateHandle<NonNullable<T[K]>>;
+  <K extends keyof T>(key: K, value?: T[K]): void | NestedUpdateHandle<
+    NonNullable<T[K]>
+  >;
 };

@@ -1,6 +1,6 @@
-import { ScheduledTransaction as FinanceScheduledTransaction } from "../finance-simulator";
+import { ScheduledTransaction as FinanceScheduledTransaction } from "../../finance-simulator";
 
-import { Schedule } from "./Schedule";
+import { Schedule } from "../Schedule";
 import { TransactionDetails } from "./TransactionDetails";
 
 export function ScheduledTransaction(props: {

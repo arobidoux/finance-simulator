@@ -9,10 +9,12 @@ import { AccountModel } from "../../models/AccountModel";
 import { MemberModel } from "../../models/MemberModel";
 import { RevenueModel } from "../../models/RevenueModel";
 import { ScheduledTransactionModel } from "../../models/ScheduledTransactionModel";
-import { MemberAccount } from "./MemberAccount";
-import { MemberRevenue } from "./MemberRevenue";
-import { MemberScheduledTransaction } from "./MemberScheduledTransaction";
-import { ModelActionButtons } from "./ModelActionButtons";
+import { MemberAccount } from "./member/MemberAccount";
+import { MemberRevenue } from "./member/MemberRevenue";
+import { MemberScheduledTransaction } from "./member/MemberScheduledTransaction";
+import { ModelActionButtons } from "../shared/ModelActionButtons";
+import { LoanModel } from "../../models/LoanModel";
+import { MemberLoan } from "./member/MemberLoan";
 
 export function Member(props: {
   useModelOptions?: useModelOptions<ModelTypeOf<typeof MemberModel>>;
@@ -22,7 +24,6 @@ export function Member(props: {
     update,
     ...$member
   } = useModel(MemberModel, props.useModelOptions);
-
   return (
     <>
       <form
@@ -69,6 +70,17 @@ export function Member(props: {
             <MemberRevenue memberId={$member.id}></MemberRevenue>
           </ModelList>
           {/* </details> */}
+
+          {/* <details> */}
+          <h3>Loans</h3>
+          <ModelList
+            model={LoanModel}
+            index={$member.toForeignIndexFor(LoanModel, "memberId")}
+          >
+            <MemberLoan memberId={$member.id}></MemberLoan>
+          </ModelList>
+          {/* </details> */}
+
           {/* <details> */}
           <h3>Scheduled Transactions</h3>
           <ModelList

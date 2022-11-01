@@ -1,10 +1,10 @@
 import { useContext, useMemo, useState } from "react";
-import { SimulationContext } from "../contexts/SimulationContext";
-import { SimulationHelper } from "../finance-simulator";
+import { SimulationContext } from "../../contexts/SimulationContext";
+import { SimulationHelper } from "../../finance-simulator";
 
-import { Amount } from "./Amount";
+import { Amount } from "../shared/Amount";
 import { FinanceAccountTransactions } from "./FinanceAccountTransactions";
-import { Interest } from "./Interest";
+import { Interest } from "../shared/Interest";
 
 export function FinanceSnapshot(props: { today?: Date; accountId?: string }) {
   const { accountId, today } = props;

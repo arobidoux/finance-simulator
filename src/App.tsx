@@ -10,6 +10,7 @@ function App() {
     (m) => true,
     (model) => new SessionStorageStore({ key: `fallback-${model.$.name}` })
   );
+
   return (
     <StoreContext.Provider value={store}>
       <div className="App">

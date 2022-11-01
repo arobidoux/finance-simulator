@@ -1,7 +1,7 @@
 import { useContext } from "react";
-import { TransactionDetails as FinanceTransactionDetails } from "../finance-simulator";
+import { TransactionDetails as FinanceTransactionDetails } from "../../finance-simulator";
 import { Amount } from "./Amount";
-import { SimulationContext } from "../contexts/SimulationContext";
+import { SimulationContext } from "../../contexts/SimulationContext";
 import { AccountName } from "./AccountName";
 
 export function TransactionDetails(props: {

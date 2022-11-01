@@ -311,7 +311,7 @@ function curryUpdateHandle<PT, K extends keyof PT>(
   dispatch: Dispatch<useModelReducerAction<PT, K>>,
   entry: PT | null
 ) {
-  function update(key: K): NestedUpdateHandle<PT[K]>;
+  function update(key: K): NestedUpdateHandle<NonNullable<PT[K]>>;
   function update(key: K, value: PT[K]): void;
   function update(key: K, value?: PT[K]) {
     if (typeof value === "undefined")
@@ -329,12 +329,14 @@ function curryNestedUpdate<T>(
   value: T | undefined,
   onValue: { (data: T): void }
 ) {
-  function update<K extends keyof T>(subKey: K): NestedUpdateHandle<T[K]>;
+  function update<K extends keyof T>(
+    subKey: K
+  ): NestedUpdateHandle<NonNullable<T[K]>>;
   function update<K extends keyof T>(subKey: K, subValue: T[K]): void;
   function update<K extends keyof T>(
     subKey: K,
     subValue?: T[K]
-  ): NestedUpdateHandle<T[K]> | void {
+  ): NestedUpdateHandle<NonNullable<T[K]>> | void {
     if (typeof subValue !== "undefined") {
       onValue({ ...value, [subKey]: subValue } as T);
       return;

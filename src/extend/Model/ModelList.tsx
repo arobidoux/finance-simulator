@@ -7,14 +7,13 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useReducer,
   useState,
 } from "react";
 import { CreatedModel } from "./CreatedModel";
 import { PaginatedMeta, StoreContext } from "../StoreContext";
 import { useModelOptions } from "./useModelOptions";
-import { ModelRequestFound } from "./ModelRequestFound";
-import { ModelRequestStatuses } from "./ModelRequestStatuses";
+
+import { useModelList } from "./useModelList";
 
 export function ModelList<T, P>(
   props: PropsWithChildren<{
@@ -33,57 +32,7 @@ export function ModelList<T, P>(
   }>
 ) {
   const storeContext = useContext(StoreContext);
-  const [{ entries }, dispatch] = useReducer(
-    (
-      state: { entries: ModelRequestFound<T>[] },
-      action:
-        | { action: "remove"; id: string }
-        | { action: "add"; entry: ModelRequestFound<T> }
-        | { action: "set"; entries: ModelRequestFound<T>[] }
-    ) => {
-      switch (action.action) {
-        case "add":
-          return { ...state, entries: [...state.entries, action.entry] };
-
-        case "remove":
-          return {
-            ...state,
-            entries: state.entries.filter((e) => e.id !== action.id),
-          };
-        case "set":
-          return { ...state, entries: action.entries };
-        default:
-          throw new Error("invalid action");
-      }
-    },
-    { entries: [] }
-  );
   const [created, setCreated] = useState(1);
-
-  useEffect(() => {
-    storeContext
-      .forModel(props.model)
-      .list(
-        props.loadPageToken ?? undefined,
-        props.index ? [props.index[0].toString(), props.index[1]] : undefined
-      )
-      .then((page) => {
-        const { entries, ...meta } = page;
-        dispatch({
-          action: "set",
-          entries: entries.map(({ id, data }) => {
-            return {
-              status: ModelRequestStatuses.FOUND,
-              id: id,
-              result: data,
-            };
-          }),
-        });
-        if (typeof props.onPageChange === "function")
-          props.onPageChange({ ...meta, entryCount: entries.length });
-      });
-  }, [storeContext, props]);
-
   useEffect(() => {
     const index = props.index;
     if (typeof index?.onDelete === "function") {
@@ -101,6 +50,12 @@ export function ModelList<T, P>(
     throw new Error("ModelList requires an element as children");
   }
 
+  const { entries, add, remove } = useModelList(props.model, {
+    index: props.index,
+    loadPageToken: props.loadPageToken,
+    loadNonce: props.loadNonce,
+  });
+
   // This use Memo was an attempt to keep the "new" component alive when the
   // ModelList is reloaded, but it failed...
   const newEntryComponent = useMemo(
@@ -111,17 +66,14 @@ export function ModelList<T, P>(
           key: "new-" + created,
           useModelOptions: {
             onCreate: (id: string, result: T) => {
-              dispatch({
-                action: "add",
-                entry: { id, result, status: ModelRequestStatuses.FOUND },
-              });
               setCreated(created + 1);
+              add(id, result);
             },
             index: props.index,
           },
         }
       ),
-    [child, dispatch, created, setCreated, props.index]
+    [child, add, created, setCreated, props.index]
   );
 
   return (
@@ -137,7 +89,7 @@ export function ModelList<T, P>(
               request,
               index: props.index,
               onDelete: () => {
-                dispatch({ action: "remove", id: request.id });
+                remove(request.id);
               },
             },
           }

@@ -1,6 +1,9 @@
 export * from "./createModel";
 export * from "./ModelList";
 export * from "./useModel";
+export * from "./useModelCache";
+export * from "./useModelList";
+export * from "./useStoreForModel";
 export * from "./ModelRequestStatuses";
 export * from "./ModelModalWithSelector";
 
@@ -14,3 +17,4 @@ export type { StoredValue } from "./StoredValue";
 export type { useModelOptions } from "./useModelOptions";
 export type { useModelResult } from "./useModelResult";
 export type { VersionizedData } from "./VersionizedData";
+export type { ModelCacheInterface } from "./ModelCacheInterface";

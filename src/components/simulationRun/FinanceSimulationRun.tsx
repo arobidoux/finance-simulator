@@ -1,13 +1,11 @@
 import { useContext, useMemo, useState } from "react";
-import { SimulationContext } from "../contexts/SimulationContext";
-import { SimulationHelper } from "../finance-simulator";
+import { SimulationContext } from "../../contexts/SimulationContext";
+import { SimulationHelper } from "../../finance-simulator";
 import { FinanceSnapshot } from "./FinanceSnapshot";
-import { ScheduledTransaction as FinanceScheduledTransaction } from "../finance-simulator";
-import { ScheduledTransaction } from "./ScheduledTransaction";
 
-import { Interest } from "./Interest";
-import { NewScheduledTransaction } from "./NewScheduledTransaction";
-import { NewAccountForm } from "./NewAccountForm";
+import { ScheduledTransaction } from "../shared/ScheduledTransaction";
+
+import { Interest } from "../shared/Interest";
 
 export function FinanceSimulationRun() {
   const [latestTick, setLatestTick] = useState(0);
@@ -92,26 +90,9 @@ function SimulationDetails() {
       <h4>Scheduled Transactions</h4>
 
       {scheduled}
-      <NewScheduledTransaction
-        newEntry={(stx: Omit<FinanceScheduledTransaction, "uuid">) => {
-          throw new Error("not handled");
-          //   simulation.addScheduledTransaction(stx);
-          //   setConfTick(confTick + 1);
-        }}
-        accounts={simulation.$accounts.map((act) => {
-          return { label: act.label, uuid: act.uuid };
-        })}
-      ></NewScheduledTransaction>
+
       <h4>Accounts</h4>
       {accounts}
-      <NewAccountForm
-        addAccount={(act) => {
-          throw new Error("not handled");
-          //   const uuid = simulation.addAccount(act);
-          //   setConfTick(confTick + 1);
-          //   return uuid;
-        }}
-      ></NewAccountForm>
     </details>
   );
 }

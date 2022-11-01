@@ -1,7 +1,7 @@
-import { ModelTypeOf, useModel, useModelOptions } from "../../extend";
-import { AccountModel } from "../../models/AccountModel";
+import { ModelTypeOf, useModel, useModelOptions } from "../../../extend";
+import { AccountModel } from "../../../models/AccountModel";
 
-import { ModelActionButtons } from "./ModelActionButtons";
+import { ModelActionButtons } from "../../shared/ModelActionButtons";
 
 export function MemberAccount(props: {
   useModelOptions?: useModelOptions<ModelTypeOf<typeof AccountModel>>;

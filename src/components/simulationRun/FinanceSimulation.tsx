@@ -1,9 +1,9 @@
 import { Dispatch, useContext, useMemo } from "react";
 import { SimulationsAction } from "./FinanceSimulationExplorer";
-import { SimulationContext } from "../contexts/SimulationContext";
-import { SimulationHelper } from "../finance-simulator";
-import { FinanceDashboard } from "./FinanceDashboard";
-import { PrecisionContext } from "../contexts/PrecisionContext";
+import { SimulationContext } from "../../contexts/SimulationContext";
+import { SimulationHelper } from "../../finance-simulator";
+import { FinanceDashboard } from "../FinanceDashboard";
+import { PrecisionContext } from "../../contexts/PrecisionContext";
 
 export function FinanceSimulation(props: {
   alias?: string;

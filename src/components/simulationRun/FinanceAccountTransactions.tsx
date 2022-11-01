@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Transaction } from "../finance-simulator";
-import { Amount } from "./Amount";
+import { Transaction } from "../../finance-simulator";
+import { Amount } from "../shared/Amount";
 
 export function FinanceAccountTransactions(props: {
   transactions: Array<Transaction>;
