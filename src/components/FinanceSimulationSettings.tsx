@@ -1,9 +1,14 @@
 import { Member } from "./settings/Member";
-import { ModelModalWithSelector } from "../extend";
+import { ModelModalWithSelector, useModel } from "../extend";
 import { useMemo, useState } from "react";
-import { MemberModel } from "../models/MemberModel";
+import { SimulationModel, MemberModel } from "../models";
+import { ModelActionButtons } from "./shared/ModelActionButtons";
 
 export function FinanceSimulationSettings(props: {}) {
+  const { entry: simulationMeta, ...$simulationMeta } = useModel(
+    SimulationModel,
+    { id: "1" }
+  );
   const members = (
     <ModelModalWithSelector
       model={MemberModel}
@@ -42,9 +47,28 @@ export function FinanceSimulationSettings(props: {}) {
 
   return (
     <div>
+      <h4>Meta</h4>
+      <form
+        onSubmit={(ev) => {
+          ev.preventDefault();
+          $simulationMeta.commit();
+        }}
+      >
+        <input
+          type="date"
+          value={(simulationMeta?.startedOn ?? new Date())
+            .toISOString()
+            .substring(0, 10)}
+          onChange={(ev) =>
+            $simulationMeta.update("startedOn", new Date(ev.target.value))
+          }
+        />
+        <ModelActionButtons $model={$simulationMeta}></ModelActionButtons>
+      </form>
       <h4>Members</h4>
-      {members}
+      <div style={{ paddingLeft: "25px" }}>{members}</div>
       <hr />
+
       <datalist id="account-type-data-list">{accountTypeOptions}</datalist>
     </div>
   );

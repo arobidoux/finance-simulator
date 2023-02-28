@@ -2,6 +2,7 @@ import { NestedUpdateHandle } from "../../extend/Model/useModelResult";
 import { Interest, Schedule } from "../../finance-simulator";
 import { RateForm } from "./RateForm";
 import { ScheduleForm } from "./ScheduleForm";
+import { Interest as InterestView } from "../shared/Interest";
 
 export function InterestForm(props: {
   interest?: Partial<Interest>;
@@ -33,6 +34,9 @@ export function InterestForm(props: {
         ></RateForm>
       </label>{" "}
       {schedule}
+      {props.interest && (
+        <InterestView interest={props.interest as Interest}></InterestView>
+      )}
     </>
   );
 }

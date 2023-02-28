@@ -1,4 +1,4 @@
-import { createModel } from "../extend";
+import { createModel, ModelTypeOf } from "../extend";
 
 export const MemberModel = createModel({
   name: "member",
@@ -8,3 +8,5 @@ export const MemberModel = createModel({
     };
   },
 });
+
+export type MemberType = ModelTypeOf<typeof MemberModel>;

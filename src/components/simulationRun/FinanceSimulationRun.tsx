@@ -1,5 +1,5 @@
-import { useContext, useMemo, useState } from "react";
-import { SimulationContext } from "../../contexts/SimulationContext";
+import { useMemo, useState } from "react";
+
 import { SimulationHelper } from "../../finance-simulator";
 import { FinanceSnapshot } from "./FinanceSnapshot";
 
@@ -7,25 +7,29 @@ import { ScheduledTransaction } from "../shared/ScheduledTransaction";
 
 import { Interest } from "../shared/Interest";
 
-export function FinanceSimulationRun() {
+export function FinanceSimulationRun(props: {
+  simulation: SimulationHelper;
+  accountIds?: string[];
+}) {
+  const { simulation } = props;
   const [latestTick, setLatestTick] = useState(0);
   // simulation.runUntil((s) => s.getSimulationAge() > 25 * 365);
 
   const snapshot = useMemo(
     () => (
       <div data-tick={latestTick}>
-        <FinanceSnapshot></FinanceSnapshot>
+        <FinanceSnapshot simulation={simulation}></FinanceSnapshot>
+
         {/* <FinanceSnapshot accountId={member.checkingAccountId}></FinanceSnapshot> */}
       </div>
     ),
 
-    [latestTick]
+    [simulation, latestTick]
   );
 
   return (
     <>
-      Finance Dimulation Run TODO
-      {/* <div style={{ width: "600px" }}>
+      <div style={{ width: "600px" }}>
         <h4>Simulation</h4>
         <StepBtn sim={simulation} setIt={setLatestTick} iter={7}></StepBtn>
         <StepBtn sim={simulation} setIt={setLatestTick} iter={30}></StepBtn>
@@ -42,11 +46,11 @@ export function FinanceSimulationRun() {
           iter={365 * 10}
         ></StepBtn>
         {snapshot}
-      </div> */}
+        <SimulationDetails simulation={simulation}></SimulationDetails>
+      </div>
       {/* <pre style={{ textAlign: "left" }}>
-        {JSON.stringify(opts.simulation, null, 4)}
-      </pre>
-      <pre style={{ textAlign: "left" }}>{JSON.stringify(member, null, 4)}</pre> */}
+        {JSON.stringify(simulation, null, 4)}
+      </pre> */}
     </>
   );
 }
@@ -71,8 +75,8 @@ function StepBtn(opts: {
   return <button onClick={() => tick(opts.iter)}>{opts.iter} days</button>;
 }
 
-function SimulationDetails() {
-  const { simulation } = useContext(SimulationContext);
+function SimulationDetails(props: { simulation: SimulationHelper }) {
+  const { simulation } = props;
 
   const scheduled = simulation.$scheduledTransactions.map((stx) => (
     <ScheduledTransaction key={stx.uuid} stx={stx}></ScheduledTransaction>

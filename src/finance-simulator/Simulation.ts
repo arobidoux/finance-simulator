@@ -6,6 +6,7 @@ import { Transaction } from "./Transaction";
 import { v1 as uuidv1 } from "uuid";
 import Debug from "debug";
 import { Interest } from "./Interest";
+import { SimulationFailedError } from "./SimulationFailedError";
 /**
  * Represent an acount in which transaction can be stored, Loan can be added
  */
@@ -16,13 +17,14 @@ export interface InterestCalculatorHandle {
 
 export interface SimulationOptions {
   interestRatePrecision?: number;
+  startedOn?: Date;
 }
 export class Simulation {
   protected accounts: Array<Account> = [];
   protected transactions: Array<Transaction> = [];
   protected scheduledTransactions: Array<ScheduledTransaction> = [];
-  protected readonly startedOn: Date = new Date();
-  protected currentDate: Date = this.startedOn;
+  protected readonly startedOn: Date;
+  protected currentDate: Date;
   protected interestCalculators: Record<string, InterestCalculatorHandle> = {};
   protected _tick: number = 0;
   protected _interestRatePrecision: number = 1000;
@@ -44,7 +46,11 @@ export class Simulation {
       if (typeof prevState.interestRatePrecision !== "undefined") {
         this._interestRatePrecision = prevState.interestRatePrecision;
       }
+      this.startedOn = prevState.startedOn ?? new Date();
+    } else {
+      this.startedOn = new Date();
     }
+    this.currentDate = this.startedOn;
   }
 
   get interestRatePrecision() {
@@ -257,6 +263,20 @@ export class Simulation {
     const uuid = "tx-" + uuidv1();
     this.transactions.push({ ...transaction, uuid });
     this.debug("adding transaction %s %o", uuid, transaction);
+    const meta = this.getAccountMeta(transaction.fromAccountId);
+
+    // confirm the account from has the funds to complete it, or is infinite
+    if (!meta.infinite) {
+      const balance = this.getAccountBalance(transaction.fromAccountId);
+      if (transaction.amount > balance) {
+        throw new SimulationFailedError(
+          this,
+          `Account balance dipping bellow 0`,
+          { transaction: { ...transaction, uuid } }
+        );
+      }
+    }
+
     return uuid;
   }
   addScheduledTransaction(
@@ -313,6 +333,7 @@ export class Simulation {
     interest: Interest | null;
     label: string;
     type: string;
+    infinite: boolean;
   } {
     const account = this.accounts.find((a) => a.uuid === accountId);
     if (account) {
@@ -320,12 +341,14 @@ export class Simulation {
         interest: account.interest,
         label: account.label,
         type: account.type,
+        infinite: account.infinite,
       };
     }
     return {
       interest: null,
       label: "**" + accountId,
       type: "un-registered",
+      infinite: true,
     };
   }
 

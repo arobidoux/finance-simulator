@@ -62,6 +62,7 @@ export class SimulationHelper extends Simulation {
       interest: loan.interest,
       label: loan.label,
       type: "loan",
+      infinite: true,
     });
     const loanTransaction = {
       amount: loan.startAmount,
@@ -125,6 +126,7 @@ export class SimulationHelper extends Simulation {
       schedule: salary.schedule,
     });
     this.salaries.push({ ...salary, scheduledTransactionId });
+    return scheduledTransactionId;
   }
 
   addSavings(saving: Saving) {
@@ -139,11 +141,12 @@ export class SimulationHelper extends Simulation {
       schedule: saving.schedule,
     });
     this.savings.push({ ...saving, scheduledTransactionId });
+    return scheduledTransactionId;
   }
 
   addMember(
     opts: MemberOptions,
-    key: string | { key: string; init: { (member: Member): void } }
+    key?: string | { key: string; init: { (member: Member): void } }
   ) {
     const idempotentKey =
       typeof key === "string"
@@ -214,6 +217,7 @@ export class Member {
         interest: null,
         label: "Checking Account of " + this.name,
         type: "checking",
+        infinite: false,
       });
     return this._checkingAccountId;
   }

@@ -5,4 +5,5 @@ export interface Account {
   label: string;
   type: string;
   interest: Interest | null;
+  infinite: boolean;
 }

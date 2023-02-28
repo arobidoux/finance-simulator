@@ -1,4 +1,4 @@
-import { createModel } from "../extend";
+import { createModel, ModelTypeOf } from "../extend";
 import { Schedule, TransactionDetails } from "../finance-simulator";
 
 interface RevenueInterface {
@@ -7,10 +7,10 @@ interface RevenueInterface {
   details: Partial<TransactionDetails>;
 }
 
-export const RevenueModel = createModel({
+export const RevenueModel = createModel<RevenueInterface>({
   name: "revenue",
   indexes: ["memberId"],
-  sample: (): RevenueInterface => {
+  sample: () => {
     throw new Error("cannot be sampled");
   },
   fromStore: (storedEntry: string) =>
@@ -19,3 +19,5 @@ export const RevenueModel = createModel({
       return value;
     }),
 });
+
+export type RevenueType = ModelTypeOf<typeof RevenueModel>;

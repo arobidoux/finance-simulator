@@ -1,4 +1,4 @@
-import { createModel } from "../extend";
+import { createModel, ModelTypeOf } from "../extend";
 import { Interest, Schedule } from "../finance-simulator";
 
 interface LoanInterface {
@@ -26,3 +26,5 @@ export const LoanModel = createModel<LoanInterface>({
       return value;
     }),
 });
+
+export type LoanType = ModelTypeOf<typeof LoanModel>;

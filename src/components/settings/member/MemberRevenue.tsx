@@ -1,14 +1,13 @@
-import { useCallback } from "react";
-import { ModelTypeOf, useModel, useModelOptions } from "../../../extend";
+import { useModel, useModelOptions } from "../../../extend";
 import { TransactionDetails } from "../../../finance-simulator";
-import { RevenueModel } from "../../../models/RevenueModel";
+import { RevenueModel, RevenueType } from "../../../models";
 
 import { ModelActionButtons } from "../../shared/ModelActionButtons";
 import { ScheduleForm } from "../../shared/ScheduleForm";
 import { TransactionDetailsForm } from "../../shared/TransactionDetailsForm";
 
 export function MemberRevenue(props: {
-  useModelOptions?: useModelOptions<ModelTypeOf<typeof RevenueModel>>;
+  useModelOptions?: useModelOptions<RevenueType>;
   memberId: string;
 }) {
   const {
@@ -32,14 +31,14 @@ export function MemberRevenue(props: {
       <TransactionDetailsForm
         details={{ ...revenue?.details, ...forcedDetails }}
         forcedDetails={forcedDetails}
-        update={useCallback(() => update("details"), [update])}
+        update={update("details")}
         memberId={props.memberId}
         limitDestToMemberAccounts={true}
       ></TransactionDetailsForm>
 
       <ScheduleForm
         schedule={revenue?.schedule}
-        update={useCallback(() => update("schedule"), [update])}
+        update={update("schedule")}
       ></ScheduleForm>
 
       <ModelActionButtons $model={$revenue}></ModelActionButtons>

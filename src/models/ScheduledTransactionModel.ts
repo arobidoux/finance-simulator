@@ -1,14 +1,14 @@
-import { createModel } from "../extend";
+import { createModel, ModelTypeOf } from "../extend";
 import { Schedule, TransactionDetails } from "../finance-simulator";
 
-export const ScheduledTransactionModel = createModel({
+export const ScheduledTransactionModel = createModel<{
+  memberId: string;
+  schedule: Partial<Schedule>;
+  details: Partial<TransactionDetails>;
+}>({
   name: "scheduled-transaction",
   indexes: ["memberId"],
-  sample: (): {
-    memberId: string;
-    schedule: Partial<Schedule>;
-    details: Partial<TransactionDetails>;
-  } => {
+  sample: () => {
     throw new Error("cannot be sampled");
   },
   fromStore: (storedEntry: string) =>
@@ -17,3 +17,7 @@ export const ScheduledTransactionModel = createModel({
       return value;
     }),
 });
+
+export type ScheduledTransactionType = ModelTypeOf<
+  typeof ScheduledTransactionModel
+>;

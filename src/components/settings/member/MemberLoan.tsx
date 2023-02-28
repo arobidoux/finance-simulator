@@ -62,7 +62,7 @@ export function MemberLoan(props: {
       </label>
         */}
       <ModelActionButtons $model={$loan}></ModelActionButtons>
-      <pre>{JSON.stringify(loan, null, 4)}</pre>
+      {/* <pre>{JSON.stringify(loan, null, 4)}</pre> */}
     </form>
   );
 }

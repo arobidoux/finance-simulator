@@ -7,6 +7,7 @@ it("can run a simple simulation", () => {
     label: "Operation",
     interest: null,
     type: "operation",
+    infinite: true,
   });
 
   s.addSalary({
@@ -34,6 +35,7 @@ it("can handle a simple loan", () => {
     label: "Operation",
     interest: null,
     type: "operation",
+    infinite: true,
   });
 
   s.addSalary({

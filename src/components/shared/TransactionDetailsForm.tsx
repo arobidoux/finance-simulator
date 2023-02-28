@@ -78,6 +78,7 @@ export function TransactionDetailsForm(props: {
           disabled={!props.details?.fromAccountId}
           onChange={(ev) => props.update?.("toAccountId", ev.target.value)}
         >
+          <option value="">(pick)</option>
           {toAccounts
             .filter((account) => account.id !== props.details?.fromAccountId)
             .map((account) => (

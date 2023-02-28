@@ -1,14 +1,17 @@
-import { useContext, useMemo, useState } from "react";
-import { SimulationContext } from "../../contexts/SimulationContext";
+import { useMemo, useState } from "react";
 import { SimulationHelper } from "../../finance-simulator";
 
 import { Amount } from "../shared/Amount";
 import { FinanceAccountTransactions } from "./FinanceAccountTransactions";
 import { Interest } from "../shared/Interest";
 
-export function FinanceSnapshot(props: { today?: Date; accountId?: string }) {
-  const { accountId, today } = props;
-  const { simulation } = useContext(SimulationContext);
+export function FinanceSnapshot(props: {
+  simulation: SimulationHelper;
+  today?: Date;
+  accountId?: string;
+}) {
+  const { accountId, today, simulation } = props;
+
   const [tab, setTab] = useState("all");
   const tick = simulation.tick;
 
@@ -55,18 +58,28 @@ export function FinanceSnapshot(props: { today?: Date; accountId?: string }) {
       );
     } else {
       const details = simulation.getAccountSummaries({ until: today });
-      return <div>{JSON.stringify(details)}</div>;
+      return (
+        <>
+          {details.map((detail) => (
+            <div key={detail.uuid}>
+              {detail.label} <Amount amount={detail.balance}></Amount>
+            </div>
+          ))}
+          <Loans simulation={simulation}></Loans>
+          {/* {JSON.stringify(details)} */}
+        </>
+      );
     }
   }, [tick, simulation, today, accountId, tab]);
 
   return <div>{result}</div>;
 }
 
-function Loans(props: { simulation: SimulationHelper; accountId: string }) {
+function Loans(props: { simulation: SimulationHelper; accountId?: string }) {
   const { simulation, accountId } = props;
-  const loans = simulation.loans.filter(
-    (loan) => loan.toAccountId === accountId
-  );
+  const loans = accountId
+    ? simulation.loans.filter((loan) => loan.toAccountId === accountId)
+    : simulation.loans;
 
   return loans.length === 0 ? (
     <p>No Loans</p>
